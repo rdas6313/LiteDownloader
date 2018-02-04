@@ -21,8 +21,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-   /* private void TestUI(){
-        for(int i=0;i<=10;i++){
+    /*private void TestUI(){
+        for(int i=0;i<10;i++){
             DownloadInformation information = new DownloadInformation("Pal by Arijit Singh",10+(i*10),10000,9999);
             adapter.add(information);
         }

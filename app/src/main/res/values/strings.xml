@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Lite Downloader</string>
+    <string name="size_and_progress">%1$d Bytes / %2$d Bytes (%3$d%%)</string>
 </resources>

@@ -1,30 +1,25 @@
 package com.example.rdas6313.litedownloader;
 
+
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+
+
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerView;
-    private Adapter adapter;
+    private final String ACTIVE_FRAG = "active_fragment";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        recyclerView = (RecyclerView)findViewById(R.id.listView);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-        adapter = new Adapter(this);
-        recyclerView.setAdapter(adapter);
-
+        ActiveDownloadFragment activeDownloadFragment = new ActiveDownloadFragment();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.container,activeDownloadFragment,ACTIVE_FRAG).commit();
     }
 
-    /*private void TestUI(){
-        for(int i=0;i<10;i++){
-            DownloadInformation information = new DownloadInformation("Pal by Arijit Singh",10+(i*10),10000,9999);
-            adapter.add(information);
-        }
-    }*/
 }

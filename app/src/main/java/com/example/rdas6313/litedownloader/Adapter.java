@@ -2,6 +2,7 @@ package com.example.rdas6313.litedownloader;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,6 +40,32 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
         }
     }
 
+    public DownloadInformation getDownloadInformation(int id){
+       if(data != null && 0<=id && id<data.size())
+           return data.get(id);
+        return null;
+    }
+
+    public void remove(int id){
+        if(data != null && id>=0 && id<data.size()){
+            data.remove(id);
+            notifyDataSetChanged();
+        }
+    }
+
+    public void clearData(){
+        if(data != null)
+            data.clear();
+    }
+
+    public int getAdapterPosition(int id){
+        for(int i=0;i<data.size();i++){
+            if(data.get(i).getId() == id)
+                return i;
+        }
+        return -1;
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View root = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout,parent,false);
@@ -58,6 +85,8 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
     }
 
     public final class ViewHolder extends RecyclerView.ViewHolder{
+
+        private final String TAG = ViewHolder.class.getName();
 
         public TextView title,downloadSizeAndProgress;
         public ProgressBar progressBar;

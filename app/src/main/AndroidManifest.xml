@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.rdas6313.litedownloader">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -18,10 +21,15 @@
         </activity>
 
         <provider
-            android:name="com.example.rdas6313.litedownloader.data.LiteContentProvider"
+            android:name=".data.LiteContentProvider"
             android:authorities="com.example.rdas6313.litedownloader"
             android:enabled="true"
-            android:exported="false"></provider>
+            android:exported="false" />
+
+        <service
+            android:name=".backgroundDownload.BackgroundDownloaderService"
+            android:enabled="true"
+            android:exported="false"></service>
     </application>
 
 </manifest>

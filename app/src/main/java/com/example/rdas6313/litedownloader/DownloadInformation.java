@@ -8,19 +8,48 @@ public class DownloadInformation {
     private String title;
     private int progress;
     private long fileSize,downloadedSize;
+    private int id;
+    private String downloadUrl,savePath;
 
-    DownloadInformation(){
+    public DownloadInformation(){
         title = null;
         progress = 0;
         fileSize = 0;
         downloadedSize = 0;
+        id = -1;
+        downloadUrl = null;
+        savePath = null;
     }
 
-    DownloadInformation(String title,int progress,long fileSize,long downloadedSize){
+    public DownloadInformation(String title,int progress,long fileSize,long downloadedSize){
         this.title = title;
         this.progress = progress;
         this.fileSize = fileSize;
         this.downloadedSize = downloadedSize;
+    }
+
+    public void setDownloadUrl(String url){
+            downloadUrl = url;
+    }
+
+    public String getDownloadUrl(){
+        return downloadUrl;
+    }
+
+    public void setSavePath(String path){
+        savePath = path;
+    }
+
+    public String getSavePath(){
+        return savePath;
+    }
+
+    public void setId(int Id){
+        id = Id;
+    }
+
+    public int getId(){
+        return id;
     }
 
     public void setTitle(String title){
@@ -52,7 +81,7 @@ public class DownloadInformation {
     }
 
     public void setDownloadedSize(long size){
-        fileSize = size;
+        downloadedSize = size;
     }
 
 }

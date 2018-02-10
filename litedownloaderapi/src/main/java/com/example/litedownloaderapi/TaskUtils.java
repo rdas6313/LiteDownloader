@@ -45,6 +45,7 @@ public class TaskUtils {
         String downloadUrl = request.getDownloadUrl();
         long downloadedSize = request.getDownloadedSize();
         int req_id = request.getId();
+        Log.e(TAG,"URL - "+downloadUrl);
 
         HttpURLConnection connection = null;
         URL url = null;
@@ -53,14 +54,13 @@ public class TaskUtils {
         try {
             url = new URL(downloadUrl);
             connection = (HttpURLConnection) url.openConnection();
-            connection.setDoOutput(true);
+            connection.setRequestMethod("GET");
             connection.addRequestProperty("Range","bytes="+downloadedSize+"-");
             connection.connect();
             Log.e(TAG,"Response code - "+connection.getResponseCode());
             if(connection.getResponseCode() != connection.HTTP_OK && connection.getResponseCode() != connection.HTTP_PARTIAL){
                 throw new Exception("Exception Response code "+connection.getResponseCode());
             }
-
             fileSize = getDownloadFileSize(connection.getHeaderField("Content-Range"));
             request.setFileSize(fileSize);
             inputStream = connection.getInputStream();
@@ -88,7 +88,15 @@ public class TaskUtils {
         }
     }
 
-    private static long getDownloadFileSize(String data){
+//    private static void headers(Map<String,List<String>> map){
+//        for(String key:map.keySet()){
+//            for(String item:map.get(key)){
+//                Log.e(TAG,key+" "+item);
+//            }
+//        }
+//    }
+
+    private static long getDownloadFileSize(String data) throws IOException{
         String[] d = data.split("/");
        // Log.e(TAG,"FILESIZE - "+d[1]);
         return Long.valueOf(d[1]);

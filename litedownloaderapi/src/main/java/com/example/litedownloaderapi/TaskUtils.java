@@ -46,7 +46,7 @@ public class TaskUtils {
         long downloadedSize = request.getDownloadedSize();
         int req_id = request.getId();
         Log.e(TAG,"URL - "+downloadUrl);
-
+     //   Log.e(TAG,"DownloadedSize "+downloadedSize);
         HttpURLConnection connection = null;
         URL url = null;
         InputStream inputStream = null;
@@ -55,14 +55,20 @@ public class TaskUtils {
             url = new URL(downloadUrl);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-            connection.addRequestProperty("Range","bytes="+downloadedSize+"-");
+            if(downloadedSize>0){
+                connection.addRequestProperty("Range","bytes="+downloadedSize+"-");
+            }
             connection.connect();
             Log.e(TAG,"Response code - "+connection.getResponseCode());
             if(connection.getResponseCode() != connection.HTTP_OK && connection.getResponseCode() != connection.HTTP_PARTIAL){
                 throw new Exception("Exception Response code "+connection.getResponseCode());
             }
-            fileSize = getDownloadFileSize(connection.getHeaderField("Content-Range"));
+            if(downloadedSize>0)
+                fileSize = getDownloadFileSize(connection.getHeaderField("Content-Range"));
+            else
+                fileSize = connection.getContentLength();
             request.setFileSize(fileSize);
+            Log.e(TAG,"FileSize "+fileSize+" DownloadedSize "+downloadedSize);
             inputStream = connection.getInputStream();
             if(inputStream != null)
                 processInputStream(inputStream,request);
@@ -98,7 +104,7 @@ public class TaskUtils {
 
     private static long getDownloadFileSize(String data) throws IOException{
         String[] d = data.split("/");
-       // Log.e(TAG,"FILESIZE - "+d[1]);
+      //  Log.e(TAG,"FILESIZE - "+d[1] + " "+ d[0]);
         return Long.valueOf(d[1]);
     }
 
@@ -107,6 +113,7 @@ public class TaskUtils {
         long downloadedSize = request.getDownloadedSize();
         long fileSize = request.getFileSize();
         String savePath = request.getSaveUri()+"/"+request.getFilename();
+        boolean isFileExists = checkIfFileExists(request.getSaveUri(),request.getFilename());
         int req_id = request.getId();
 
         int len = 0;
@@ -114,14 +121,23 @@ public class TaskUtils {
         byte[] b = new byte[1024];
         FileOutputStream fileOutputStream = null;
         try{
-            fileOutputStream = new FileOutputStream(new File(savePath),true);
+
+            if(isFileExists)
+                fileOutputStream = new FileOutputStream(new File(savePath),true);
+            else {
+                File file = new File(savePath);
+                file.createNewFile();
+                Log.e(TAG,"FILE NAME "+file.getName());
+                fileOutputStream = new FileOutputStream(file);
+            }
             while ((len = inputStream.read(b)) != -1){
-                fileOutputStream.write(b);
+                fileOutputStream.write(b,0,len);
                 downloadedSize += len;
                 //Log.e(TAG,"Download Len - "+len);
                 progress = (int)((downloadedSize*100)/fileSize);
                 sendProgress(req_id,progress,downloadedSize,fileSize);
             }
+            Log.e(TAG,"ACTUAL DOWNLOADED SIZE "+downloadedSize);
             request.setDownloadedSize(downloadedSize);
             if(progress >= 100) {
                 sendSuccess(request);

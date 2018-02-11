@@ -20,7 +20,7 @@ import android.view.View;
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,ButtonListener{
 
     private final String TAG = MainActivity.class.getName();
 
@@ -95,5 +95,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         Intent intent = new Intent(this,addDownloadActivity.class);
         startActivity(intent);
+    }
+
+    @Override
+    public void itemButtonClick(int id, View v,int status) {
+        switch (status){
+            case DownloadInformation.RESUME_DOWNLOAD:
+                if(service != null)
+                    service.pauseDownload(id);
+                break;
+
+        }
     }
 }

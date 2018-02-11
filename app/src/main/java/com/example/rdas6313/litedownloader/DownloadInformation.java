@@ -10,6 +10,11 @@ public class DownloadInformation {
     private long fileSize,downloadedSize;
     private int id;
     private String downloadUrl,savePath;
+    private int status;
+
+    public final static int PAUSE_DOWNLOAD = -1;
+    public final static int RESUME_DOWNLOAD = 1;
+    public final static int CANCEL_DOWNLOAD = 0;
 
     public DownloadInformation(){
         title = null;
@@ -19,6 +24,7 @@ public class DownloadInformation {
         id = -1;
         downloadUrl = null;
         savePath = null;
+        status = RESUME_DOWNLOAD;
     }
 
     public DownloadInformation(String title,int progress,long fileSize,long downloadedSize){
@@ -26,6 +32,15 @@ public class DownloadInformation {
         this.progress = progress;
         this.fileSize = fileSize;
         this.downloadedSize = downloadedSize;
+        status = RESUME_DOWNLOAD;
+    }
+
+    public void setDownloadStatus(int downloadStatus){
+        status = downloadStatus;
+    }
+
+    public int getDownloadStatus(){
+        return status;
     }
 
     public void setDownloadUrl(String url){

@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -20,10 +21,12 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
 
     private ArrayList<DownloadInformation>data;
     private Context context;
+    private ButtonListener buttonListener;
 
-    public Adapter(Context context){
+    public Adapter(Context context,ButtonListener listener){
         data = new ArrayList<>();
         this.context = context;
+        buttonListener = listener;
     }
 
     public void add(DownloadInformation information){
@@ -84,26 +87,34 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
         return data.size();
     }
 
-    public final class ViewHolder extends RecyclerView.ViewHolder{
+    public final class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
 
         private final String TAG = ViewHolder.class.getName();
 
         public TextView title,downloadSizeAndProgress;
         public ProgressBar progressBar;
-        public ImageButton button;
+        public ImageButton dbutton;
 
         public ViewHolder(View item){
             super(item);
             title = (TextView)item.findViewById(R.id.downloadTitle);
             downloadSizeAndProgress = (TextView)item.findViewById(R.id.downloadSizeAndProgress);
             progressBar = (ProgressBar)item.findViewById(R.id.downloadProgressBar);
-            button = (ImageButton)item.findViewById(R.id.ButtonView);
+            dbutton = (ImageButton)item.findViewById(R.id.ButtonView);
+            dbutton.setImageResource(R.drawable.ic_pause_black_24dp);
+            dbutton.setOnClickListener(this);
         }
 
         public void setData(DownloadInformation data){
             title.setText(data.getTitle());
             downloadSizeAndProgress.setText(context.getString(R.string.size_and_progress,data.getDownloadedSize(),data.getFileSize(),data.getProgress()));
             progressBar.setProgress(data.getProgress());
+        }
+
+        @Override
+        public void onClick(View v) {
+            int status = data.get(getAdapterPosition()).getDownloadStatus();
+            buttonListener.itemButtonClick(getAdapterPosition(),dbutton,status);
         }
     }
 }

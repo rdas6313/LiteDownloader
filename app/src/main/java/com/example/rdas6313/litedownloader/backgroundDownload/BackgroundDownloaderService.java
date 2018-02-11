@@ -42,6 +42,11 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         return informations;
     }
 
+    public void pauseDownload(int id){
+        if(manager != null)
+            manager.pause(id);
+    }
+
     private void startDownload(String filename,String download_url,String saveUri){
         DownloadInformation information = new DownloadInformation(filename,0,0,0);
         information.setDownloadUrl(download_url);

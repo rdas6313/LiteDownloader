@@ -3,21 +3,24 @@ package com.example.rdas6313.litedownloader;
 
 import android.Manifest;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Environment;
 import android.os.IBinder;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     private final String TAG = MainActivity.class.getName();
 
@@ -25,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private ActiveDownloadFragment activeDownloadFragment;
     private boolean isbound;
     private BackgroundDownloaderService service;
+    private FloatingActionButton addDownloadBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,9 +38,11 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.container,activeDownloadFragment,ACTIVE_FRAG).commit();
 
+        addDownloadBtn = (FloatingActionButton)findViewById(R.id.addDownloadBtn);
+        addDownloadBtn.setOnClickListener(this);
     }
 
-    /*private void TestStart(){
+   /* private void TestStart(){
         String url = "http://media.djmazadownload.xyz/music/Singles/Boond%20Boond%20Mein%20-%20Hate%20Story%204%20-190Kbps%20%5BDJMaza.Fun%5D.mp3";
         String uri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
 
@@ -47,8 +53,8 @@ public class MainActivity extends AppCompatActivity {
         bundle.putString("TITLE","Boond Boond.mp3");
         intent.putExtras(bundle);
         startService(intent);
-    }
-*/
+    }*/
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -85,4 +91,9 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent(this,addDownloadActivity.class);
+        startActivity(intent);
+    }
 }

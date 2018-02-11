@@ -13,6 +13,7 @@ import com.example.litedownloaderapi.Interfaces.DownloadManager;
 import com.example.litedownloaderapi.Manager;
 import com.example.litedownloaderapi.Request;
 import com.example.rdas6313.litedownloader.DownloadInformation;
+import com.example.rdas6313.litedownloader.Utilities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,11 +68,21 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         runningData = new HashMap();
     }
 
+    private void release(){
+        manager.unbind();
+        manager.release();
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        release();
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-        manager.unbind();
-        manager.release();
+        release();
     }
 
     @Override
@@ -83,7 +94,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Bundle bundle = intent.getExtras();
-        startDownload(bundle.getString("TITLE"),bundle.getString("URL"),bundle.getString("URI"));
+        startDownload(bundle.getString(Utilities.DOWNLOAD_FILENAME),bundle.getString(Utilities.DOWNLOAD_URL),bundle.getString(Utilities.SAVE_DOWNLOAD_URI));
         return START_NOT_STICKY;
     }
 

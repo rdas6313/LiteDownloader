@@ -30,13 +30,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private BackgroundDownloaderService service;
     private FloatingActionButton addDownloadBtn;
 
+    private final String PAUSE_ERROR_FRAG = "pause_error_fagment";
+    private PauseErrorFragment pauseErrorFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         activeDownloadFragment = new ActiveDownloadFragment();
+        pauseErrorFragment = new PauseErrorFragment();
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.container,activeDownloadFragment,ACTIVE_FRAG).commit();
+
+        fragmentManager.beginTransaction().add(R.id.container,activeDownloadFragment,ACTIVE_FRAG)
+                .add(R.id.container,pauseErrorFragment,PAUSE_ERROR_FRAG).commit();
 
         addDownloadBtn = (FloatingActionButton)findViewById(R.id.addDownloadBtn);
         addDownloadBtn.setOnClickListener(this);
@@ -59,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onPause() {
         super.onPause();
         if(service != null)
-            service.setListener(null);
+            service.setListeners(null,null);
         unbindService(connection);
         isbound = false;
     }
@@ -78,8 +84,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isbound = true;
             BackgroundDownloaderService.MyBinder object = (BackgroundDownloaderService.MyBinder)binder;
             service = object.getService();
-            service.setListener(activeDownloadFragment);
+            service.setListeners(activeDownloadFragment,pauseErrorFragment);
             activeDownloadFragment.setDownloadData(service.getRunningDownloads());
+            pauseErrorFragment.setDownloadsData(service.getPausedErrorDownloads());
             Log.e(TAG,"OnService Connected");
         }
 

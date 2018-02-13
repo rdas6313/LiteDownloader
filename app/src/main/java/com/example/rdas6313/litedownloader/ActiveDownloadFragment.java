@@ -80,7 +80,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     }
 
     @Override
-    public void onError(int id, int errorCode, String errorMsg) {
+    public void onError(int id, int errorCode, String errorMsg,Object object) {
         Log.e(TAG,"Id "+id+" "+errorCode+" "+errorMsg);
         adapter.remove(adapter.getAdapterPosition(id));
     }

@@ -24,20 +24,31 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     private final String TAG = BackgroundDownloaderService.class.getName();
     private HashMap runningData;
+    private HashMap pauseErrorData;
     private int running;
 
     private final MyBinder binder = new MyBinder();
-    private CallBackListener listener;
+    private CallBackListener runninglistener;
+    private CallBackListener pauseErrorlistener;
     private Manager manager;
 
-    public void setListener(CallBackListener callBackListener){
-        listener = callBackListener;
+    public void setListeners(CallBackListener RcallBackListener,CallBackListener PcallBackListener2){
+        runninglistener = RcallBackListener;
+        pauseErrorlistener = PcallBackListener2;
     }
 
     public ArrayList getRunningDownloads(){
         ArrayList<DownloadInformation>informations = new ArrayList<>();
         for(Object key : runningData.keySet()){
             informations.add((DownloadInformation) runningData.get(key));
+        }
+        return informations;
+    }
+
+    public ArrayList getPausedErrorDownloads(){
+        ArrayList<DownloadInformation>informations = new ArrayList<>();
+        for(Object key : pauseErrorData.keySet()){
+            informations.add((DownloadInformation) pauseErrorData.get(key));
         }
         return informations;
     }
@@ -55,10 +66,16 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         int id = manager.push(request);
         information.setId(id);
         runningData.put(id,information);
-        if(listener != null)
-            listener.onAddDownload(id,filename,download_url,saveUri);
+        if(runninglistener != null)
+            runninglistener.onAddDownload(id,filename,download_url,saveUri);
 
         Log.e(TAG,"Start Download Called");
+    }
+
+    public void removePausedErrorDownload(int id){
+        if(pauseErrorData != null && pauseErrorData.containsKey(id)){
+            pauseErrorData.remove(id);
+        }
     }
 
 
@@ -71,11 +88,22 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         manager.bind(this);
         running = 0;
         runningData = new HashMap();
+        pauseErrorData = new HashMap();
     }
 
     private void release(){
-        manager.unbind();
-        manager.release();
+        clearDownloadsData();
+        if(manager != null) {
+            manager.unbind();
+            manager.release();
+        }
+    }
+
+    private void clearDownloadsData(){
+        if(runningData != null)
+            runningData.clear();
+        if(pauseErrorData != null)
+            pauseErrorData.clear();
     }
 
     @Override
@@ -112,26 +140,33 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     @Override
     public void onProgress(int id, int progress, long downloadedSize, long fileSize) {
-        if(listener != null)
-            listener.onProgress(id,progress,downloadedSize,fileSize);
+        if(runninglistener != null)
+            runninglistener.onProgress(id,progress,downloadedSize,fileSize);
        // Log.e(TAG,"OnProgress id "+id+" "+progress);
         updateInformation(id,progress,downloadedSize,fileSize);
     }
 
     @Override
     public void onError(int id, int errorCode, String errorMsg) {
-        if(listener != null)
-            listener.onError(id,errorCode,errorMsg);
+        if(runninglistener != null)
+            runninglistener.onError(id,errorCode,errorMsg,null);
         if(runningData.containsKey(id)){
+            if(pauseErrorData != null){
+                DownloadInformation information = (DownloadInformation) runningData.get(id);
+                pauseErrorData.put(id,information);
+                if(pauseErrorlistener != null)
+                    pauseErrorlistener.onError(id,errorCode,errorMsg,information);
+            }
             runningData.remove(id);
         }
+
         Log.e(TAG,"OnError "+id+" "+errorCode+" "+errorMsg);
     }
 
     @Override
     public void onSuccess(Request request) {
-        if(listener != null)
-            listener.onSuccess(request);
+        if(runninglistener != null)
+            runninglistener.onSuccess(request);
         if(runningData.containsKey(request.getId())){
             updateInformation(request.getId(),100,request.getFileSize(),request.getFileSize());
             runningData.remove(request.getId());

@@ -101,7 +101,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
             downloadSizeAndProgress = (TextView)item.findViewById(R.id.downloadSizeAndProgress);
             progressBar = (ProgressBar)item.findViewById(R.id.downloadProgressBar);
             dbutton = (ImageButton)item.findViewById(R.id.ButtonView);
-            dbutton.setImageResource(R.drawable.ic_pause_black_24dp);
             dbutton.setOnClickListener(this);
         }
 

@@ -105,6 +105,13 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
         }
 
         public void setData(DownloadInformation data){
+            if(data.getDownloadStatus() == DownloadInformation.RESUME_DOWNLOAD)
+                dbutton.setImageResource(R.drawable.ic_pause_black_24dp);
+            else if(data.getDownloadStatus() == DownloadInformation.PAUSE_DOWNLOAD)
+                dbutton.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+            else
+                dbutton.setImageResource(R.drawable.ic_replay_black_24dp);
+
             title.setText(data.getTitle());
             downloadSizeAndProgress.setText(context.getString(R.string.size_and_progress,data.getDownloadedSize(),data.getFileSize(),data.getProgress()));
             progressBar.setProgress(data.getProgress());

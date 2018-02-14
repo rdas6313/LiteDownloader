@@ -4,12 +4,14 @@ package com.example.rdas6313.litedownloader;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 
 import com.example.litedownloaderapi.Request;
 import com.example.rdas6313.litedownloader.backgroundDownload.CallBackListener;
@@ -26,6 +28,7 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private Adapter adapter;
+    private CommunicationListener listener;
 
     public PauseErrorFragment() {}
 
@@ -45,6 +48,8 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
         adapter = new Adapter(getContext(),this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
+       // recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),DividerItemDecoration.VERTICAL));
+        listener = (CommunicationListener) getContext();
     }
 
     public void setDownloadsData(ArrayList<DownloadInformation> list){
@@ -56,7 +61,15 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
 
     @Override
     public void itemButtonClick(int id, View v, int status) {
-
+        DownloadInformation information = adapter.getDownloadInformation(id);
+        ImageButton itemBtn = (ImageButton) v;
+        switch (status){
+            case DownloadInformation.PAUSE_DOWNLOAD:
+                information.setDownloadStatus(DownloadInformation.RESUME_DOWNLOAD);
+                listener.onresumeDownload(information.getId(),status,information.getDownloadUrl(),information.getSavePath(),information.getTitle());//sending download id here
+                adapter.remove(id);
+                break;
+        }
     }
 
 

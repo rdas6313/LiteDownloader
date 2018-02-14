@@ -29,7 +29,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private Adapter adapter;
-    private ButtonListener listener;
+    private CommunicationListener listener;
 
     @Nullable
     @Override
@@ -46,7 +46,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
         adapter = new Adapter(getContext(),this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
-        listener = (ButtonListener) getContext();
+        listener = (CommunicationListener) getContext();
     }
 
     public void setDownloadData(ArrayList<DownloadInformation>data){
@@ -67,28 +67,33 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
 
     @Override
     public void onProgress(int id, int progress, long downloadedSize, long fileSize) {
-        int Id = adapter.getAdapterPosition(id);
+        int Id = adapter.getAdapterPositionByDownloadId(id);
         if(Id == -1)
             return;
         DownloadInformation information = adapter.getDownloadInformation(Id);
+        if(information == null)
+            return;
         information.setProgress(progress);
         information.setDownloadedSize(downloadedSize);
         information.setFileSize(fileSize);
+        if(information.getDownloadStatus() == DownloadInformation.PAUSE_DOWNLOAD || information.getDownloadStatus() == DownloadInformation.CANCEL_DOWNLOAD)
+            return;
         Adapter.ViewHolder holder = (Adapter.ViewHolder) recyclerView.findViewHolderForAdapterPosition(Id);
-        holder.setData(information);
+        if(holder != null)
+            holder.setData(information);
 
     }
 
     @Override
     public void onError(int id, int errorCode, String errorMsg,Object object) {
         Log.e(TAG,"Id "+id+" "+errorCode+" "+errorMsg);
-        adapter.remove(adapter.getAdapterPosition(id));
+        adapter.remove(adapter.getAdapterPositionByDownloadId(id));
     }
 
     @Override
     public void onSuccess(Request request) {
         Log.i(TAG,"id "+request.getId()+" Success");
-        adapter.remove(adapter.getAdapterPosition(request.getId()));
+        adapter.remove(adapter.getAdapterPositionByDownloadId(request.getId()));
     }
 
     @Override
@@ -98,8 +103,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
         switch (status){
             case DownloadInformation.RESUME_DOWNLOAD:
                 information.setDownloadStatus(DownloadInformation.PAUSE_DOWNLOAD);
-                itemBtn.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-                listener.itemButtonClick(information.getId(),null,status);//sending download id
+                listener.onpauseDownload(information.getId(),status);//sending download id
                 break;
         }
     }

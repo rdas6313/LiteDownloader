@@ -10,7 +10,7 @@ public interface CallBackListener {
 
     public void onAddDownload(int id,String title,String downlaod_url,String save_Path);
     public void onProgress(int id,int progress,long downloadedSize,long fileSize);
-    public void onError(int id,int errorCode,String errorMsg,Object object);
+    public void onError(int id,int errorCode,String errorMsg,Object objec);
     public void onSuccess(Request request);
 
 }

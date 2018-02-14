@@ -61,7 +61,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
             data.clear();
     }
 
-    public int getAdapterPosition(int id){
+    public int getAdapterPositionByDownloadId(int id){
         for(int i=0;i<data.size();i++){
             if(data.get(i).getId() == id)
                 return i;
@@ -105,6 +105,8 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
         }
 
         public void setData(DownloadInformation data){
+            if(data == null)
+                return;
             if(data.getDownloadStatus() == DownloadInformation.RESUME_DOWNLOAD)
                 dbutton.setImageResource(R.drawable.ic_pause_black_24dp);
             else if(data.getDownloadStatus() == DownloadInformation.PAUSE_DOWNLOAD)

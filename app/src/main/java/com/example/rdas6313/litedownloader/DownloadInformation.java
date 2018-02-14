@@ -16,6 +16,17 @@ public class DownloadInformation {
     public final static int RESUME_DOWNLOAD = 1;
     public final static int CANCEL_DOWNLOAD = 0;
 
+
+    public DownloadInformation(DownloadInformation information){
+        title = information.getTitle();
+        progress = information.getProgress();
+        fileSize = information.getFileSize();
+        downloadedSize = information.getDownloadedSize();
+        id = information.getId();
+        downloadUrl = information.getDownloadUrl();
+        savePath = information.getSavePath();
+        status = information.getDownloadStatus();
+    }
     public DownloadInformation(){
         title = null;
         progress = 0;

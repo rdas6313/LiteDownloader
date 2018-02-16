@@ -64,6 +64,7 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
         DownloadInformation information = adapter.getDownloadInformation(id);
         ImageButton itemBtn = (ImageButton) v;
         switch (status){
+            case DownloadInformation.CANCEL_DOWNLOAD:
             case DownloadInformation.PAUSE_DOWNLOAD:
                 information.setDownloadStatus(DownloadInformation.RESUME_DOWNLOAD);
                 listener.onresumeDownload(information.getId(),status,information.getDownloadUrl(),information.getSavePath(),information.getTitle());//sending download id here
@@ -82,7 +83,9 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
     @Override
     public void onError(int id, int errorCode, String errorMsg, Object object) {
         DownloadInformation information = (DownloadInformation) object;
-        adapter.add(information);
+        if(information != null) {
+            adapter.add(information);
+        }
         Log.e(TAG,"onError Called "+id);
     }
 

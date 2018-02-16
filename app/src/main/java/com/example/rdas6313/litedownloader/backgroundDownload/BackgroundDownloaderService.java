@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.support.annotation.IntDef;
 import android.util.Log;
 
+import com.example.litedownloaderapi.DownloadCode;
 import com.example.litedownloaderapi.Interfaces.DownloadEventListener;
 import com.example.litedownloaderapi.Interfaces.DownloadManager;
 import com.example.litedownloaderapi.Manager;
@@ -57,7 +58,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         if(manager != null) {
             if(runningData.containsKey(id)){
                 DownloadInformation information = (DownloadInformation)runningData.get(id);
-                information.setDownloadStatus(DownloadInformation.PAUSE_DOWNLOAD);
             }
             manager.pause(id);
 
@@ -159,10 +159,19 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         if(runningData.containsKey(id)){
             if(pauseErrorData != null){
                 DownloadInformation information = (DownloadInformation) runningData.get(id);
-                DownloadInformation newinfo = new DownloadInformation(information);
-                pauseErrorData.put(id,information);
-                if(pauseErrorlistener != null)
-                    pauseErrorlistener.onError(id,errorCode,errorMsg,newinfo);
+                if(information != null) {
+                    if(errorCode == DownloadCode.RESPONSE_ERROR)
+                        information.setDownloadStatus(DownloadInformation.CANCEL_DOWNLOAD);
+                    else if(errorCode == DownloadCode.DOWNLOAD_INTERRUPT_ERROR)
+                        information.setDownloadStatus(DownloadInformation.PAUSE_DOWNLOAD);
+
+                    //Todo:- Handel if there is other kind of Error happen in here like URL ERROR,FILE NOT FOUND ERROR
+                    DownloadInformation newinfo = new DownloadInformation(information);
+
+                    pauseErrorData.put(id, information);
+                    if (pauseErrorlistener != null)
+                        pauseErrorlistener.onError(id, errorCode, errorMsg, newinfo);
+                }
             }
             runningData.remove(id);
         }

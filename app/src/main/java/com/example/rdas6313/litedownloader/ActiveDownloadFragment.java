@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +48,22 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
         listener = (CommunicationListener) getContext();
+        ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                int pos = viewHolder.getAdapterPosition();
+                int download_id = adapter.getDownloadInformation(pos).getId();
+                adapter.remove(pos);
+                if(listener != null)
+                    listener.removeOngoingDownlaod(download_id);
+            }
+        });
+        touchHelper.attachToRecyclerView(recyclerView);
     }
 
     public void setDownloadData(ArrayList<DownloadInformation>data){

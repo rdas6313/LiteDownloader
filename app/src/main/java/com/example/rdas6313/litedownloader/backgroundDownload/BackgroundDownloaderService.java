@@ -56,11 +56,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     public void pauseDownload(int id){
         if(manager != null) {
-            if(runningData.containsKey(id)){
-                DownloadInformation information = (DownloadInformation)runningData.get(id);
-            }
             manager.pause(id);
-
         }
     }
 
@@ -82,6 +78,13 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         if(pauseErrorData != null && pauseErrorData.containsKey(id)){
             pauseErrorData.remove(id);
         }
+    }
+
+    public void removeRunningDownload(int id){
+        if(runningData != null)
+            runningData.remove(id);
+        if(manager != null)
+            manager.cancel(id);
     }
 
 
@@ -139,6 +142,8 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     private void updateInformation(int id,int progress,long downloadedSize,long fileSize){
         DownloadInformation information = (DownloadInformation) runningData.get(id);
+        if(information == null)
+            return;
         information.setProgress(progress);
         information.setDownloadedSize(downloadedSize);
         information.setFileSize(fileSize);
@@ -154,9 +159,10 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     @Override
     public void onError(int id, int errorCode, String errorMsg) {
-        if(runninglistener != null)
-            runninglistener.onError(id,errorCode,errorMsg,null);
         if(runningData.containsKey(id)){
+            if(runninglistener != null)
+                runninglistener.onError(id,errorCode,errorMsg,null);
+
             if(pauseErrorData != null){
                 DownloadInformation information = (DownloadInformation) runningData.get(id);
                 if(information != null) {

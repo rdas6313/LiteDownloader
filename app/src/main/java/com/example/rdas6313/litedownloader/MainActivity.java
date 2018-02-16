@@ -114,6 +114,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void removeOngoingDownlaod(int id) {
+        if(service != null){
+            service.removeRunningDownload(id);
+        }
+    }
+
+    @Override
+    public void removePauseErrorDownload(int id) {
+
+    }
+
+    @Override
     public void onpauseDownload(int id, int status) {
         if(service != null)
             service.pauseDownload(id);

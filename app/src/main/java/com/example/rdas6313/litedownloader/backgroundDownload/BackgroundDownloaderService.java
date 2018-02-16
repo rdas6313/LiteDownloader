@@ -182,6 +182,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             runningData.remove(id);
         }
 
+
         Log.e(TAG,"OnError "+id+" "+errorCode+" "+errorMsg);
     }
 
@@ -193,8 +194,11 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             updateInformation(request.getId(),100,request.getFileSize(),request.getFileSize());
             runningData.remove(request.getId());
         }
+
         Log.e(TAG,"OnSuccess "+request.getId());
     }
+
+
 
     public class MyBinder extends Binder{
         public BackgroundDownloaderService getService(){

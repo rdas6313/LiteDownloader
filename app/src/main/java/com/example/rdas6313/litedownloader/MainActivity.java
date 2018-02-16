@@ -122,7 +122,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void removePauseErrorDownload(int id) {
-
+        if(service != null)
+            service.removePausedErrorDownload(id);
     }
 
     @Override

@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,6 +51,22 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
         recyclerView.setAdapter(adapter);
        // recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),DividerItemDecoration.VERTICAL));
         listener = (CommunicationListener) getContext();
+        ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                int pos = viewHolder.getAdapterPosition();
+                int downlaod_id = adapter.getDownloadInformation(pos).getId();
+                adapter.remove(pos);
+                if(listener != null)
+                    listener.removePauseErrorDownload(downlaod_id);
+            }
+        });
+        touchHelper.attachToRecyclerView(recyclerView);
     }
 
     public void setDownloadsData(ArrayList<DownloadInformation> list){

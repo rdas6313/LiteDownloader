@@ -40,8 +40,9 @@ public class ManagerUtils {
 
     public static void destroy(){
         if(executorService != null) {
-            //executorService.shutdown();
-            executorService.shutdownNow();
+            executorService.shutdown();
+            //executorService.shutdownNow();
+            executorService = null;
         }
     }
 }

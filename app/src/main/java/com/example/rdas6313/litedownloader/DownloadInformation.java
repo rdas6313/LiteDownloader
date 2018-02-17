@@ -1,10 +1,15 @@
 package com.example.rdas6313.litedownloader;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import java.io.Serializable;
+
 /**
  * Created by rdas6313 on 4/2/18.
  */
 
-public class DownloadInformation {
+public class DownloadInformation implements Parcelable {
     private String title;
     private int progress;
     private long fileSize,downloadedSize;
@@ -45,6 +50,29 @@ public class DownloadInformation {
         this.downloadedSize = downloadedSize;
         status = RESUME_DOWNLOAD;
     }
+
+    protected DownloadInformation(Parcel in) {
+        title = in.readString();
+        progress = in.readInt();
+        fileSize = in.readLong();
+        downloadedSize = in.readLong();
+        id = in.readInt();
+        downloadUrl = in.readString();
+        savePath = in.readString();
+        status = in.readInt();
+    }
+
+    public static final Creator<DownloadInformation> CREATOR = new Creator<DownloadInformation>() {
+        @Override
+        public DownloadInformation createFromParcel(Parcel in) {
+            return new DownloadInformation(in);
+        }
+
+        @Override
+        public DownloadInformation[] newArray(int size) {
+            return new DownloadInformation[size];
+        }
+    };
 
     public void setDownloadStatus(int downloadStatus){
         status = downloadStatus;
@@ -110,4 +138,20 @@ public class DownloadInformation {
         downloadedSize = size;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(title);
+        dest.writeInt(progress);
+        dest.writeLong(fileSize);
+        dest.writeLong(downloadedSize);
+        dest.writeInt(id);
+        dest.writeString(downloadUrl);
+        dest.writeString(savePath);
+        dest.writeInt(status);
+    }
 }

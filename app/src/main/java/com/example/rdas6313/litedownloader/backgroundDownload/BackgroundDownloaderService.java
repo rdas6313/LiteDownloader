@@ -1,7 +1,9 @@
 package com.example.rdas6313.litedownloader.backgroundDownload;
 
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -15,10 +17,12 @@ import com.example.litedownloaderapi.Manager;
 import com.example.litedownloaderapi.Request;
 import com.example.rdas6313.litedownloader.DownloadInformation;
 import com.example.rdas6313.litedownloader.Utilities;
+import com.example.rdas6313.litedownloader.data.DownloaderContract;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Objects;
 import java.util.Set;
 
 public class BackgroundDownloaderService extends Service implements DownloadEventListener{
@@ -91,8 +95,9 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     private void isThereAnyRunningDownload(){
         if(runningData != null && runningData.isEmpty()) {
             Utilities.changeServiceAliveValue(false, getApplication());
-            if(!Utilities.isActivityAlive(getApplication()))
+            if(!Utilities.isActivityAlive(getApplication())) {
                 stopSelf();
+            }
         }
     }
 
@@ -110,6 +115,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     }
 
     private void release(){
+        Utilities.uploadPauseErrorData(pauseErrorData,getApplicationContext());
         clearDownloadsData();
         if(manager != null) {
             manager.unbind();
@@ -215,4 +221,5 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             return BackgroundDownloaderService.this;
         }
     }
+
 }

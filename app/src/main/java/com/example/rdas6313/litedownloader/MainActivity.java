@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         addDownloadBtn = (FloatingActionButton)findViewById(R.id.addDownloadBtn);
         addDownloadBtn.setOnClickListener(this);
+        Utilities.changeActivityAliveValue(true,getApplication());
     }
 
    /* private void TestStart(){
@@ -130,5 +131,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onpauseDownload(int id, int status) {
         if(service != null)
             service.pauseDownload(id);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Utilities.changeActivityAliveValue(false,getApplication());
+        if(!Utilities.isServiceAlive(getApplication())){
+            Intent intent = new Intent(this,BackgroundDownloaderService.class);
+            stopService(intent);
+        }
     }
 }

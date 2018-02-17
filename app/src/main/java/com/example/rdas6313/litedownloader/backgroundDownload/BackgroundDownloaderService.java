@@ -61,6 +61,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     }
 
     public void startDownload(String filename,String download_url,String saveUri){
+        Utilities.changeServiceAliveValue(true,getApplication());
         DownloadInformation information = new DownloadInformation(filename,0,0,0);
         information.setDownloadUrl(download_url);
         information.setSavePath(saveUri);
@@ -87,6 +88,14 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             manager.cancel(id);
     }
 
+    private void isThereAnyRunningDownload(){
+        if(runningData != null && runningData.isEmpty()) {
+            Utilities.changeServiceAliveValue(false, getApplication());
+            if(!Utilities.isActivityAlive(getApplication()))
+                stopSelf();
+        }
+    }
+
 
     public BackgroundDownloaderService() {}
 
@@ -106,6 +115,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             manager.unbind();
             manager.release();
         }
+        Log.e(TAG,"OnDestroy Called");
     }
 
     private void clearDownloadsData(){
@@ -182,7 +192,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             runningData.remove(id);
         }
 
-
+        isThereAnyRunningDownload();
         Log.e(TAG,"OnError "+id+" "+errorCode+" "+errorMsg);
     }
 
@@ -194,7 +204,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             updateInformation(request.getId(),100,request.getFileSize(),request.getFileSize());
             runningData.remove(request.getId());
         }
-
+        isThereAnyRunningDownload();
         Log.e(TAG,"OnSuccess "+request.getId());
     }
 

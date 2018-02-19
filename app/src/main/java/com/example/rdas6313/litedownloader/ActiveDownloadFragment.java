@@ -74,8 +74,11 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     }
 
     @Override
-    public void onAddDownload(int id, String title, String downlaod_url, String save_Path) {
-        DownloadInformation information = new DownloadInformation(title,0,0,0);
+    public void onAddDownload(int id, String title, String downlaod_url, String save_Path,long fileSize,long downloadedSize) {
+        int progress = 0;
+        if(fileSize>0)
+            progress = (int)((downloadedSize*100)/fileSize);
+        DownloadInformation information = new DownloadInformation(title,progress,fileSize,downloadedSize);
         information.setId(id);
         information.setDownloadUrl(downlaod_url);
         information.setSavePath(save_Path);

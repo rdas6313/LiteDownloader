@@ -84,7 +84,7 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
             case DownloadInformation.CANCEL_DOWNLOAD:
             case DownloadInformation.PAUSE_DOWNLOAD:
                 information.setDownloadStatus(DownloadInformation.RESUME_DOWNLOAD);
-                listener.onresumeDownload(information.getId(),status,information.getDownloadUrl(),information.getSavePath(),information.getTitle());//sending download id here
+                listener.onresumeDownload(information.getId(),status,information.getDownloadUrl(),information.getSavePath(),information.getTitle(),information.getFileSize(),information.getDownloadedSize());//sending download id here
                 adapter.remove(id);
                 break;
         }
@@ -92,7 +92,8 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
 
 
     @Override
-    public void onAddDownload(int id, String title, String downlaod_url, String save_Path) {}
+    public void onAddDownload(int id, String title, String downlaod_url, String save_Path, long fileSize, long downloadedSize) {
+    }
 
     @Override
     public void onProgress(int id, int progress, long downloadedSize, long fileSize) {}

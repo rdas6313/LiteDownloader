@@ -5,7 +5,7 @@ package com.example.rdas6313.litedownloader;
  */
 
 public interface CommunicationListener {
-    public void onresumeDownload(int id,int status,String downloadUrl,String savePath,String filename);
+    public void onresumeDownload(int id,int status,String downloadUrl,String savePath,String filename,long filesize,long downloadedSize);
     public void onpauseDownload(int id,int status);
     public void removeOngoingDownlaod(int id);
     public void removePauseErrorDownload(int id);

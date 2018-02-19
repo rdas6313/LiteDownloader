@@ -120,10 +120,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     @Override
-    public void onresumeDownload(int id,int status, String downloadUrl,String savePath,String filename) {
+    public void onresumeDownload(int id,int status, String downloadUrl,String savePath,String filename,long filesize,long downloadedSize) {
         if(service != null){
             service.removePausedErrorDownload(id);
-            service.startDownload(filename,downloadUrl,savePath);
+            service.startDownload(filename,downloadUrl,savePath,filesize,downloadedSize);
         }
     }
 

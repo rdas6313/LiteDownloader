@@ -78,7 +78,7 @@ public final class Utilities {
             if(filesize > 0)
                 progress = (int)((downloadedSize*100)/filesize);
 
-            Log.e(TAG,title+" "+filesize+" "+progress+" "+status);
+         //   Log.e(TAG,title+" "+filesize+" "+progress+" "+status);
 
             DownloadInformation information = new DownloadInformation(title,progress,filesize,downloadedSize);
             information.setDownloadUrl(url);

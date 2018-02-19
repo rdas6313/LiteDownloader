@@ -64,9 +64,12 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         }
     }
 
-    public void startDownload(String filename,String download_url,String saveUri){
+    public void startDownload(String filename,String download_url,String saveUri,long filesize,long downloadedSize){
         Utilities.changeServiceAliveValue(true,getApplication());
-        DownloadInformation information = new DownloadInformation(filename,0,0,0);
+        int progress = 0;
+        if(filesize>0)
+            progress = (int)((downloadedSize*100)/filesize);
+        DownloadInformation information = new DownloadInformation(filename,progress,filesize,downloadedSize);
         information.setDownloadUrl(download_url);
         information.setSavePath(saveUri);
         Request request = new Request(filename,download_url,saveUri);
@@ -74,7 +77,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         information.setId(id);
         runningData.put(id,information);
         if(runninglistener != null)
-            runninglistener.onAddDownload(id,filename,download_url,saveUri);
+            runninglistener.onAddDownload(id,filename,download_url,saveUri,filesize,downloadedSize);
 
         Log.e(TAG,"Start Download Called");
     }
@@ -159,7 +162,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     public int onStartCommand(Intent intent, int flags, int startId) {
         Bundle bundle = intent.getExtras();
         if(bundle != null)
-            startDownload(bundle.getString(Utilities.DOWNLOAD_FILENAME),bundle.getString(Utilities.DOWNLOAD_URL),bundle.getString(Utilities.SAVE_DOWNLOAD_URI));
+            startDownload(bundle.getString(Utilities.DOWNLOAD_FILENAME),bundle.getString(Utilities.DOWNLOAD_URL),bundle.getString(Utilities.SAVE_DOWNLOAD_URI),0,0);
         return START_NOT_STICKY;
     }
 

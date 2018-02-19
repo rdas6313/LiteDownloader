@@ -59,7 +59,7 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
         String filename = filenameView.getText().toString();
         String save_uri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
         if(service != null){
-            service.startDownload(filename,url,save_uri);
+            service.startDownload(filename,url,save_uri,0,0);
         }else{
             Bundle bundle = new Bundle();
             bundle.putString(Utilities.DOWNLOAD_FILENAME,filename);

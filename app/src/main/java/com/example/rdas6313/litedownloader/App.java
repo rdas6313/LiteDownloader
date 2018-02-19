@@ -2,6 +2,8 @@ package com.example.rdas6313.litedownloader;
 
 import android.app.Application;
 
+import java.util.ArrayList;
+
 /**
  * Created by rdas6313 on 17/2/18.
  */

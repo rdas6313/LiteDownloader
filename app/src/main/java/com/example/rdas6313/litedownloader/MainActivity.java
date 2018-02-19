@@ -6,10 +6,14 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,9 +22,12 @@ import android.util.Log;
 import android.view.View;
 
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
+import com.example.rdas6313.litedownloader.data.DownloaderContract;
+
+import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener,CommunicationListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,CommunicationListener,LoaderManager.LoaderCallbacks<Cursor>{
 
     private final String TAG = MainActivity.class.getName();
 
@@ -33,10 +40,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final String PAUSE_ERROR_FRAG = "pause_error_fagment";
     private PauseErrorFragment pauseErrorFragment;
 
+    private ArrayList<DownloadInformation> list;
+    private boolean alreadySentDataToService;
+
+    private final int PAUSE_ERROR_LOADER_ID = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        alreadySentDataToService = false;
+
         activeDownloadFragment = new ActiveDownloadFragment();
         pauseErrorFragment = new PauseErrorFragment();
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -47,20 +62,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         addDownloadBtn = (FloatingActionButton)findViewById(R.id.addDownloadBtn);
         addDownloadBtn.setOnClickListener(this);
         Utilities.changeActivityAliveValue(true,getApplication());
+        if(!Utilities.isServiceAlive(getApplication())){
+            getSupportLoaderManager().initLoader(PAUSE_ERROR_LOADER_ID,null,this);
+            Intent intent = new Intent(this,BackgroundDownloaderService.class);
+            startService(intent);
+            bindService(intent,connection,0);
+        }
     }
 
-   /* private void TestStart(){
-        String url = "http://media.djmazadownload.xyz/music/Singles/Boond%20Boond%20Mein%20-%20Hate%20Story%204%20-190Kbps%20%5BDJMaza.Fun%5D.mp3";
-        String uri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
-
-        Intent intent = new Intent(this,BackgroundDownloaderService.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("URL",url);
-        bundle.putString("URI",uri);
-        bundle.putString("TITLE","Boond Boond.mp3");
-        intent.putExtras(bundle);
-        startService(intent);
-    }*/
 
     @Override
     protected void onPause() {
@@ -88,6 +97,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             service.setListeners(activeDownloadFragment,pauseErrorFragment);
             activeDownloadFragment.setDownloadData(service.getRunningDownloads());
             pauseErrorFragment.setDownloadsData(service.getPausedErrorDownloads());
+            if(list != null && !alreadySentDataToService){
+                service.setPauseErrorData(list);
+                alreadySentDataToService = true;
+            }
             Log.e(TAG,"OnService Connected");
         }
 
@@ -142,4 +155,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             stopService(intent);
         }
     }
+
+    @Override
+    public Loader onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(this, DownloaderContract.PausedError.CONTENT_URI,null,null,null,null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        list = Utilities.ChangeCursorToArrayListForPauseError(data);
+        pauseErrorFragment.setDownloadsData(list);
+      //  Utilities.sendPauseErrorDownloadDataToService(list,getApplication());
+        if(service != null) {
+            service.setPauseErrorData(list);
+            alreadySentDataToService = true;
+        }
+        Log.e(TAG,"On LOAD FINISHED");
+    }
+
+
+    @Override
+    public void onLoaderReset(Loader loader) {}
 }

@@ -36,20 +36,25 @@ public class BackgroundDataUploadingService extends IntentService {
     }
 
     private void uploadPauseErrorData(ArrayList<DownloadInformation>list){
-
+        getContentResolver().delete(DownloaderContract.PausedError.CONTENT_URI,null,null);
+        if(list == null || list.size() == 0)
+            return;
         ContentValues values[] = new ContentValues[list.size()];
         int i;
         for(i=0;i<list.size();i++){
             ContentValues value = new ContentValues();
             DownloadInformation information = (DownloadInformation) list.get(i);
+//            Log.e(TAG,information.getTitle()+" "+information.getFileSize()+" "+information.getProgress()+" "+
+//            information.getDownloadStatus());
             value.put(DownloaderContract.PausedError.TITLE,information.getTitle());
             value.put(DownloaderContract.PausedError.DOWNLOAD_URL,information.getDownloadUrl());
             value.put(DownloaderContract.PausedError.SAVE_URI,information.getSavePath());
             value.put(DownloaderContract.PausedError.FILESIZE,information.getFileSize());
             value.put(DownloaderContract.PausedError.DOWNLOADED_SiZE,information.getDownloadedSize());
+            value.put(DownloaderContract.PausedError.LAST_DOWNLOAD_STATUS,information.getDownloadStatus());
             values[i] = value;
         }
-        getContentResolver().delete(DownloaderContract.PausedError.CONTENT_URI,null,null);
+
         getContentResolver().bulkInsert(DownloaderContract.PausedError.CONTENT_URI,values);
         //Log.e(TAG,"Deleted Entry "+a+" Inserted Entry "+b);
     }

@@ -49,6 +49,7 @@ public final class DownloaderContract {
         public final static String DOWNLOADED_SiZE = "downloaded_size";
         public final static String DOWNLOAD_URL = "download_url";
         public final static String SAVE_URI = "save_uri";
+        public final static String LAST_DOWNLOAD_STATUS = "download_status";
 
 
         public final static String MIME_TYPE_DIR = ContentResolver.CURSOR_DIR_BASE_TYPE

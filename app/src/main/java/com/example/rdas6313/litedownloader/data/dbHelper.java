@@ -30,6 +30,7 @@ public class dbHelper extends SQLiteOpenHelper {
                 +DownloaderContract.PausedError.TITLE+" text NOT NULL,"
                 +DownloaderContract.PausedError.DOWNLOAD_URL+" text NOT NULL,"
                 +DownloaderContract.PausedError.FILESIZE+" text NOT NULL,"
+                +DownloaderContract.PausedError.LAST_DOWNLOAD_STATUS+" integer NOT NULL,"
                 +DownloaderContract.PausedError.DOWNLOADED_SiZE+" text NOT NULL,"
                 +DownloaderContract.PausedError.SAVE_URI+" text NOT NULL);";
 

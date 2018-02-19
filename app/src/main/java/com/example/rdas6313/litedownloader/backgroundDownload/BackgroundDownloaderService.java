@@ -15,6 +15,7 @@ import com.example.litedownloaderapi.Interfaces.DownloadEventListener;
 import com.example.litedownloaderapi.Interfaces.DownloadManager;
 import com.example.litedownloaderapi.Manager;
 import com.example.litedownloaderapi.Request;
+import com.example.rdas6313.litedownloader.App;
 import com.example.rdas6313.litedownloader.DownloadInformation;
 import com.example.rdas6313.litedownloader.Utilities;
 import com.example.rdas6313.litedownloader.data.DownloaderContract;
@@ -30,7 +31,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     private final String TAG = BackgroundDownloaderService.class.getName();
     private HashMap runningData;
     private HashMap pauseErrorData;
-    private int running;
 
     private final MyBinder binder = new MyBinder();
     private CallBackListener runninglistener;
@@ -101,6 +101,13 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         }
     }
 
+    public void setPauseErrorData(ArrayList list){
+        HashMap map = Utilities.changeArrayListToHashMap(list);
+        if(map == null || map.isEmpty())
+            return;
+        pauseErrorData = map;
+
+    }
 
     public BackgroundDownloaderService() {}
 
@@ -109,7 +116,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         super.onCreate();
         manager = Manager.getInstance(2);
         manager.bind(this);
-        running = 0;
         runningData = new HashMap();
         pauseErrorData = new HashMap();
     }
@@ -152,7 +158,8 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Bundle bundle = intent.getExtras();
-        startDownload(bundle.getString(Utilities.DOWNLOAD_FILENAME),bundle.getString(Utilities.DOWNLOAD_URL),bundle.getString(Utilities.SAVE_DOWNLOAD_URI));
+        if(bundle != null)
+            startDownload(bundle.getString(Utilities.DOWNLOAD_FILENAME),bundle.getString(Utilities.DOWNLOAD_URL),bundle.getString(Utilities.SAVE_DOWNLOAD_URI));
         return START_NOT_STICKY;
     }
 
@@ -182,11 +189,10 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             if(pauseErrorData != null){
                 DownloadInformation information = (DownloadInformation) runningData.get(id);
                 if(information != null) {
-                    if(errorCode == DownloadCode.RESPONSE_ERROR)
-                        information.setDownloadStatus(DownloadInformation.CANCEL_DOWNLOAD);
-                    else if(errorCode == DownloadCode.DOWNLOAD_INTERRUPT_ERROR)
+                    if(errorCode == DownloadCode.DOWNLOAD_INTERRUPT_ERROR)
                         information.setDownloadStatus(DownloadInformation.PAUSE_DOWNLOAD);
-
+                    else
+                        information.setDownloadStatus(DownloadInformation.CANCEL_DOWNLOAD);
                     //Todo:- Handel if there is other kind of Error happen in here like URL ERROR,FILE NOT FOUND ERROR
                     DownloadInformation newinfo = new DownloadInformation(information);
 

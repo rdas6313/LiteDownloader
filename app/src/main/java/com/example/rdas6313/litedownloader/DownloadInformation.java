@@ -49,6 +49,7 @@ public class DownloadInformation implements Parcelable {
         this.fileSize = fileSize;
         this.downloadedSize = downloadedSize;
         status = RESUME_DOWNLOAD;
+        id = -1;
     }
 
     protected DownloadInformation(Parcel in) {

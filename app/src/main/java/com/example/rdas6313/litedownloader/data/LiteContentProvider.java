@@ -59,7 +59,6 @@ public class LiteContentProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
         }
-
         if(row>0)
             getContext().getContentResolver().notifyChange(uri,null);
         return row;
@@ -141,6 +140,7 @@ public class LiteContentProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
         }
+
         if(localuri != null)
             getContext().getContentResolver().notifyChange(uri,null);
 
@@ -179,11 +179,11 @@ public class LiteContentProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
         }
+
         if(cursor != null)
             cursor.setNotificationUri(getContext().getContentResolver(),uri);
 
         return cursor;
-
     }
 
     @Override
@@ -206,6 +206,7 @@ public class LiteContentProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Not yet implemented");
         }
+
         if(row>0){
             getContext().getContentResolver().notifyChange(uri,null);
         }

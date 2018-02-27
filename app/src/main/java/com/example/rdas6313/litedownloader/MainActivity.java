@@ -164,6 +164,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         list = Utilities.ChangeCursorToArrayListForPauseError(data);
+        if(data != null)
+            data.close();
         pauseErrorFragment.setDownloadsData(list);
       //  Utilities.sendPauseErrorDownloadDataToService(list,getApplication());
         if(service != null) {

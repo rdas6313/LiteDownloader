@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -52,6 +53,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final int NUM_OF_PAGE = 2;
     private PagerAdapter pagerAdapter;
 
+    private TabLayout tabLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         activeDownloadFragment = new ActiveDownloadFragment();
         pauseErrorFragment = new PauseErrorFragment();
-
 
         addDownloadBtn = (FloatingActionButton)findViewById(R.id.addDownloadBtn);
         addDownloadBtn.setOnClickListener(this);
@@ -78,6 +80,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         pagerAdapter = new PagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
 
+        tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        tabLayout.setupWithViewPager(pager);
     }
 
 
@@ -157,6 +161,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
      private class PagerAdapter extends FragmentStatePagerAdapter{
 
+         private final String ACTIVE_DOWNLOAD_TITLE = "OnGoing";
+         private final String PAUSE_ERROR_DOWNLOAD_TITLE = "Paused/Error";
+
         public PagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -177,5 +184,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public int getCount() {
             return NUM_OF_PAGE;
         }
-    }
+
+         @Override
+         public CharSequence getPageTitle(int position) {
+             switch (position){
+                 case 0:
+                     return ACTIVE_DOWNLOAD_TITLE;
+                 case 1:
+                     return PAUSE_ERROR_DOWNLOAD_TITLE;
+                 default:
+                     return null;
+             }
+         }
+     }
 }

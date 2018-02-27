@@ -1,6 +1,10 @@
 package com.example.rdas6313.litedownloader;
 
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,6 +19,7 @@ import android.widget.ImageButton;
 
 import com.example.litedownloaderapi.Manager;
 import com.example.litedownloaderapi.Request;
+import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 import com.example.rdas6313.litedownloader.backgroundDownload.CallBackListener;
 
 import java.util.ArrayList;
@@ -30,7 +35,8 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private Adapter adapter;
-    private CommunicationListener listener;
+    private BackgroundDownloaderService service;
+
 
     @Nullable
     @Override
@@ -47,7 +53,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
         adapter = new Adapter(getContext(),this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
-        listener = (CommunicationListener) getContext();
+//        listener = (CommunicationListener) getContext();
         ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
@@ -59,19 +65,16 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
                 int pos = viewHolder.getAdapterPosition();
                 int download_id = adapter.getDownloadInformation(pos).getId();
                 adapter.remove(pos);
-                if(listener != null)
-                    listener.removeOngoingDownlaod(download_id);
+                /*if(listener != null)
+                    listener.removeOngoingDownlaod(download_id);*/
+                if(service != null){
+                    service.removeRunningDownload(download_id);
+                }
             }
         });
         touchHelper.attachToRecyclerView(recyclerView);
     }
 
-    public void setDownloadData(ArrayList<DownloadInformation>data){
-        if(data!= null && data.size()>0) {
-            adapter.clearData();
-            adapter.add(data);
-        }
-    }
 
     @Override
     public void onAddDownload(int id, String title, String downlaod_url, String save_Path,long fileSize,long downloadedSize) {
@@ -117,21 +120,57 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     }
 
     @Override
+    public void onGettingPauseErrorDownloads(ArrayList list) {}
+
+
+
+    @Override
     public void itemButtonClick(int id,View v,int status) {
         DownloadInformation information = adapter.getDownloadInformation(id);
         ImageButton itemBtn = (ImageButton) v;
         switch (status){
             case DownloadInformation.RESUME_DOWNLOAD:
                 information.setDownloadStatus(DownloadInformation.PAUSE_DOWNLOAD);
-                listener.onpauseDownload(information.getId(),status);//sending download id
+                /*listener.onpauseDownload(information.getId(),status);//sending download id*/
+                if(service != null){
+                    service.pauseDownload(information.getId());
+                }
                 break;
         }
     }
 
-    /*private void TestUI(){
-        for(int i=0;i<10;i++){
-            DownloadInformation information = new DownloadInformation("Pal by arijit singh",10*i,100,72);
-            adapter.add(information);
+    @Override
+    public void onResume() {
+        super.onResume();
+        Intent intent = new Intent(getContext(),BackgroundDownloaderService.class);
+        getContext().bindService(intent,connection,0);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(service != null)
+            service.setRunninglistener(null);
+        getContext().unbindService(connection);
+    }
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder iBinder) {
+            BackgroundDownloaderService.MyBinder myBinder = (BackgroundDownloaderService.MyBinder)iBinder;
+            service = myBinder.getService();
+            service.setRunninglistener(ActiveDownloadFragment.this);
+            ArrayList list = service.getRunningDownloads();
+            if(list != null && list.size()>0){
+                adapter.clearData();
+                adapter.add(list);
+            }
         }
-    }*/
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            service = null;
+        }
+    };
+
 }

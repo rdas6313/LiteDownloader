@@ -10,10 +10,13 @@ import android.database.Cursor;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,7 +30,7 @@ import com.example.rdas6313.litedownloader.data.DownloaderContract;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener,CommunicationListener,LoaderManager.LoaderCallbacks<Cursor>{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,LoaderManager.LoaderCallbacks<Cursor>{
 
     private final String TAG = MainActivity.class.getName();
 
@@ -45,6 +48,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private final int PAUSE_ERROR_LOADER_ID = 1;
 
+    private ViewPager pager;
+    private final int NUM_OF_PAGE = 2;
+    private PagerAdapter pagerAdapter;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,10 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         activeDownloadFragment = new ActiveDownloadFragment();
         pauseErrorFragment = new PauseErrorFragment();
-        FragmentManager fragmentManager = getSupportFragmentManager();
 
-        fragmentManager.beginTransaction().add(R.id.container,activeDownloadFragment,ACTIVE_FRAG)
-                .add(R.id.container,pauseErrorFragment,PAUSE_ERROR_FRAG).commit();
 
         addDownloadBtn = (FloatingActionButton)findViewById(R.id.addDownloadBtn);
         addDownloadBtn.setOnClickListener(this);
@@ -68,14 +73,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             startService(intent);
             bindService(intent,connection,0);
         }
+
+        pager = (ViewPager)findViewById(R.id.view_pager);
+        pagerAdapter = new PagerAdapter(getSupportFragmentManager());
+        pager.setAdapter(pagerAdapter);
+
     }
 
 
     @Override
     protected void onPause() {
         super.onPause();
-        if(service != null)
-            service.setListeners(null,null);
         unbindService(connection);
         isbound = false;
     }
@@ -94,9 +102,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isbound = true;
             BackgroundDownloaderService.MyBinder object = (BackgroundDownloaderService.MyBinder)binder;
             service = object.getService();
-            service.setListeners(activeDownloadFragment,pauseErrorFragment);
-            activeDownloadFragment.setDownloadData(service.getRunningDownloads());
-            pauseErrorFragment.setDownloadsData(service.getPausedErrorDownloads());
             if(list != null && !alreadySentDataToService){
                 service.setPauseErrorData(list);
                 alreadySentDataToService = true;
@@ -116,34 +121,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         Intent intent = new Intent(this,addDownloadActivity.class);
         startActivity(intent);
-    }
-
-
-    @Override
-    public void onresumeDownload(int id,int status, String downloadUrl,String savePath,String filename,long filesize,long downloadedSize) {
-        if(service != null){
-            service.removePausedErrorDownload(id);
-            service.startDownload(filename,downloadUrl,savePath,filesize,downloadedSize);
-        }
-    }
-
-    @Override
-    public void removeOngoingDownlaod(int id) {
-        if(service != null){
-            service.removeRunningDownload(id);
-        }
-    }
-
-    @Override
-    public void removePauseErrorDownload(int id) {
-        if(service != null)
-            service.removePausedErrorDownload(id);
-    }
-
-    @Override
-    public void onpauseDownload(int id, int status) {
-        if(service != null)
-            service.pauseDownload(id);
     }
 
     @Override
@@ -166,8 +143,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         list = Utilities.ChangeCursorToArrayListForPauseError(data);
         if(data != null)
             data.close();
-        pauseErrorFragment.setDownloadsData(list);
-      //  Utilities.sendPauseErrorDownloadDataToService(list,getApplication());
         if(service != null) {
             service.setPauseErrorData(list);
             alreadySentDataToService = true;
@@ -177,5 +152,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     @Override
-    public void onLoaderReset(Loader loader) {}
+    public void onLoaderReset(Loader loader) {
+    }
+
+     private class PagerAdapter extends FragmentStatePagerAdapter{
+
+        public PagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position){
+                case 0:
+                    return activeDownloadFragment;
+                case 1:
+                    return pauseErrorFragment;
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return NUM_OF_PAGE;
+        }
+    }
 }

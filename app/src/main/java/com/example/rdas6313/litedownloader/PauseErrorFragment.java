@@ -1,7 +1,11 @@
 package com.example.rdas6313.litedownloader;
 
 
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
@@ -15,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 
 import com.example.litedownloaderapi.Request;
+import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 import com.example.rdas6313.litedownloader.backgroundDownload.CallBackListener;
 
 import java.util.ArrayList;
@@ -29,7 +34,7 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private Adapter adapter;
-    private CommunicationListener listener;
+    private BackgroundDownloaderService service;
 
     public PauseErrorFragment() {}
 
@@ -50,7 +55,7 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
        // recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),DividerItemDecoration.VERTICAL));
-        listener = (CommunicationListener) getContext();
+//        listener = (CommunicationListener) getContext();
         ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
@@ -62,19 +67,18 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
                 int pos = viewHolder.getAdapterPosition();
                 int downlaod_id = adapter.getDownloadInformation(pos).getId();
                 adapter.remove(pos);
-                if(listener != null)
+                /*if(listener != null) {
                     listener.removePauseErrorDownload(downlaod_id);
+
+                }*/
+                if(service != null)
+                    service.removePausedErrorDownload(downlaod_id);
             }
         });
         touchHelper.attachToRecyclerView(recyclerView);
     }
 
-    public void setDownloadsData(ArrayList<DownloadInformation> list){
-        if(list != null && list.size()>0) {
-            adapter.clearData();
-            adapter.add(list);
-        }
-    }
+
 
     @Override
     public void itemButtonClick(int id, View v, int status) {
@@ -84,7 +88,11 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
             case DownloadInformation.CANCEL_DOWNLOAD:
             case DownloadInformation.PAUSE_DOWNLOAD:
                 information.setDownloadStatus(DownloadInformation.RESUME_DOWNLOAD);
-                listener.onresumeDownload(information.getId(),status,information.getDownloadUrl(),information.getSavePath(),information.getTitle(),information.getFileSize(),information.getDownloadedSize());//sending download id here
+                //listener.onresumeDownload(information.getId(),status,information.getDownloadUrl(),information.getSavePath(),information.getTitle(),information.getFileSize(),information.getDownloadedSize());//sending download id here
+                if(service != null){
+                    service.removePausedErrorDownload(information.getId());
+                    service.startDownload(information.getTitle(),information.getDownloadUrl(),information.getSavePath(),information.getFileSize(),information.getDownloadedSize());
+                }
                 adapter.remove(id);
                 break;
         }
@@ -107,6 +115,50 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
         Log.e(TAG,"onError Called "+id);
     }
 
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Intent intent = new Intent(getContext(),BackgroundDownloaderService.class);
+        getContext().bindService(intent,connection,0);
+
+
+    }
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(service != null)
+            service.setPauseErrorlistener(null);
+        getContext().unbindService(connection);
+    }
+
     @Override
     public void onSuccess(Request request) {}
+
+    @Override
+    public void onGettingPauseErrorDownloads(ArrayList list) {
+        adapter.clearData();
+        adapter.add(list);
+    }
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder iBinder) {
+            BackgroundDownloaderService.MyBinder myBinder = (BackgroundDownloaderService.MyBinder)iBinder;
+            service = myBinder.getService();
+            service.setPauseErrorlistener(PauseErrorFragment.this);
+            ArrayList list = service.getPausedErrorDownloads();
+            if(list != null && list.size() > 0){
+                adapter.clearData();
+                adapter.add(list);
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            service = null;
+        }
+    };
 }

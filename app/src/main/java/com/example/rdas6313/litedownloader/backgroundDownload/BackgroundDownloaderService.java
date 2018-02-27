@@ -37,9 +37,13 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     private CallBackListener pauseErrorlistener;
     private Manager manager;
 
-    public void setListeners(CallBackListener RcallBackListener,CallBackListener PcallBackListener2){
-        runninglistener = RcallBackListener;
-        pauseErrorlistener = PcallBackListener2;
+
+    public void setRunninglistener(CallBackListener listener){
+        runninglistener = listener;
+    }
+
+    public void setPauseErrorlistener(CallBackListener listener){
+        pauseErrorlistener = listener;
     }
 
     public ArrayList getRunningDownloads(){
@@ -109,6 +113,8 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         if(map == null || map.isEmpty())
             return;
         pauseErrorData = map;
+        if(pauseErrorlistener != null)
+            pauseErrorlistener.onGettingPauseErrorDownloads(list);
 
     }
 

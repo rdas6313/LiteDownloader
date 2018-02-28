@@ -25,6 +25,7 @@ public final class Utilities {
     public final static String DOWNLOAD_FILENAME = "filename";
 
     public final static String UPLOAD_PAUSE_ERROR_KEY = "key_pause_error";
+    public final static String UPLOAD_SUCCESS_KEY = "success_key";
 
     public static void changeServiceAliveValue(boolean value, Application application){
         App app = (App)application;
@@ -44,22 +45,37 @@ public final class Utilities {
         App app = (App)application;
         app.isActivityAlive = value;
     }
-    public static void uploadPauseErrorData(HashMap map, Context context){
-        if(map == null)
-            return;
+    public static ArrayList MapToArrayList(HashMap map){
+        if(map == null || map.isEmpty())
+            return null;
 
 //        Log.e(TAG,"PAUSE ERROR MAP SIZE "+map.size());
         ArrayList<DownloadInformation>list = new ArrayList<>();
-        if(!map.isEmpty()){
-            for(Object key:map.keySet()){
-                DownloadInformation information = (DownloadInformation)map.get(key);
-                list.add(information);
-            }
-        }
 
-        Intent intent = new Intent(context, BackgroundDataUploadingService.class);
-        intent.putParcelableArrayListExtra(UPLOAD_PAUSE_ERROR_KEY,list);
-        context.startService(intent);
+        for(Object key:map.keySet()){
+            DownloadInformation information = (DownloadInformation)map.get(key);
+            list.add(information);
+        }
+        return list;
+    }
+
+    public static ArrayList changeCursorToArrayListForSuccess(Cursor cursor){
+        if(cursor == null)
+            return null;
+        ArrayList list = new ArrayList();
+        while(cursor.moveToNext()){
+            String title = cursor.getString(cursor.getColumnIndex(DownloaderContract.Success.TITLE));
+            String url = cursor.getString(cursor.getColumnIndex(DownloaderContract.Success.DOWNLOAD_URL));
+            String save_uri = cursor.getString(cursor.getColumnIndex(DownloaderContract.Success.SAVE_URI));
+            long filesize = Long.parseLong(cursor.getString(cursor.getColumnIndex(DownloaderContract.Success.FILESIZE)));
+            DownloadInformation information = new DownloadInformation(title,100,filesize,filesize);
+            information.setDownloadStatus(DownloadInformation.SUCCESS_DOWNLOAD);
+            information.setId(cursor.getInt(cursor.getColumnIndex(DownloaderContract.Success._ID)));
+            information.setSavePath(save_uri);
+            information.setDownloadUrl(url);
+            list.add(information);
+        }
+        return list;
     }
 
     public static ArrayList ChangeCursorToArrayListForPauseError(Cursor cursor){
@@ -99,6 +115,13 @@ public final class Utilities {
             map.put(information.getId(),information);
         }
         return map;
+    }
+    public static void uploadData(HashMap pauseErrorData,ArrayList successData,Context context){
+        ArrayList pauseErrorList = MapToArrayList(pauseErrorData);
+        Intent intent = new Intent(context, BackgroundDataUploadingService.class);
+        intent.putParcelableArrayListExtra(UPLOAD_SUCCESS_KEY,successData);
+        intent.putParcelableArrayListExtra(UPLOAD_PAUSE_ERROR_KEY,pauseErrorList);
+        context.startService(intent);
     }
 
 

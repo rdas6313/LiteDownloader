@@ -35,6 +35,7 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
     private RecyclerView.LayoutManager layoutManager;
     private Adapter adapter;
     private BackgroundDownloaderService service;
+    private boolean isAdapterAlreadyLoaded;
 
     public PauseErrorFragment() {}
 
@@ -50,6 +51,7 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        isAdapterAlreadyLoaded = false;
         layoutManager = new LinearLayoutManager(getContext());
         adapter = new Adapter(getContext(),this);
         recyclerView.setLayoutManager(layoutManager);
@@ -138,9 +140,12 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
     public void onSuccess(Request request) {}
 
     @Override
-    public void onGettingPauseErrorDownloads(ArrayList list) {
-        adapter.clearData();
-        adapter.add(list);
+    public void onGettingDownloads(ArrayList list) {
+        if(!isAdapterAlreadyLoaded){
+            adapter.clearData();
+            adapter.add(list);
+            isAdapterAlreadyLoaded = true;
+        }
     }
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -149,10 +154,13 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
             BackgroundDownloaderService.MyBinder myBinder = (BackgroundDownloaderService.MyBinder)iBinder;
             service = myBinder.getService();
             service.setPauseErrorlistener(PauseErrorFragment.this);
-            ArrayList list = service.getPausedErrorDownloads();
-            if(list != null && list.size() > 0){
-                adapter.clearData();
-                adapter.add(list);
+            if(!isAdapterAlreadyLoaded){
+                ArrayList list = service.getPausedErrorDownloads();
+                if(list != null && list.size() > 0){
+                    adapter.clearData();
+                    adapter.add(list);
+                    isAdapterAlreadyLoaded = true;
+                }
             }
         }
 

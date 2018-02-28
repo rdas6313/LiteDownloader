@@ -1,30 +1,21 @@
 package com.example.rdas6313.litedownloader.backgroundDownload;
 
 import android.app.Service;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.annotation.IntDef;
 import android.util.Log;
 
 import com.example.litedownloaderapi.DownloadCode;
 import com.example.litedownloaderapi.Interfaces.DownloadEventListener;
-import com.example.litedownloaderapi.Interfaces.DownloadManager;
 import com.example.litedownloaderapi.Manager;
 import com.example.litedownloaderapi.Request;
-import com.example.rdas6313.litedownloader.App;
 import com.example.rdas6313.litedownloader.DownloadInformation;
 import com.example.rdas6313.litedownloader.Utilities;
-import com.example.rdas6313.litedownloader.data.DownloaderContract;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Objects;
-import java.util.Set;
 
 public class BackgroundDownloaderService extends Service implements DownloadEventListener{
 
@@ -37,6 +28,8 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     private CallBackListener pauseErrorlistener;
     private Manager manager;
 
+    private ArrayList successDownloadList;
+    private CallBackListener successListener;
 
     public void setRunninglistener(CallBackListener listener){
         runninglistener = listener;
@@ -44,6 +37,23 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     public void setPauseErrorlistener(CallBackListener listener){
         pauseErrorlistener = listener;
+    }
+
+    public void setSuccessDownloadListener(CallBackListener listener){
+        successListener = listener;
+    }
+
+    public void setSuccessDownloadList(ArrayList list){
+        if(list == null || list.size() == 0)
+            return;
+        successDownloadList.clear();
+        successDownloadList.addAll(list);
+        if(successListener != null)
+            successListener.onGettingDownloads(list);
+    }
+
+    public ArrayList getSuccessDownloadList(){
+        return successDownloadList;
     }
 
     public ArrayList getRunningDownloads(){
@@ -75,6 +85,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             progress = (int)((downloadedSize*100)/filesize);
         DownloadInformation information = new DownloadInformation(filename,progress,filesize,downloadedSize);
         information.setDownloadUrl(download_url);
+        information.setDownloadStatus(DownloadInformation.RESUME_DOWNLOAD);
         information.setSavePath(saveUri);
         Request request = new Request(filename,download_url,saveUri);
         int id = manager.push(request);
@@ -112,9 +123,10 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         HashMap map = Utilities.changeArrayListToHashMap(list);
         if(map == null || map.isEmpty())
             return;
-        pauseErrorData = map;
+        pauseErrorData.clear();
+        pauseErrorData.putAll(map);
         if(pauseErrorlistener != null)
-            pauseErrorlistener.onGettingPauseErrorDownloads(list);
+            pauseErrorlistener.onGettingDownloads(list);
 
     }
 
@@ -127,10 +139,11 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         manager.bind(this);
         runningData = new HashMap();
         pauseErrorData = new HashMap();
+        successDownloadList = new ArrayList();
     }
 
     private void release(){
-        Utilities.uploadPauseErrorData(pauseErrorData,getApplicationContext());
+        Utilities.uploadData(pauseErrorData,successDownloadList,getApplicationContext());
         clearDownloadsData();
         if(manager != null) {
             manager.unbind();
@@ -183,10 +196,11 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     @Override
     public void onProgress(int id, int progress, long downloadedSize, long fileSize) {
+        updateInformation(id,progress,downloadedSize,fileSize);
         if(runninglistener != null)
             runninglistener.onProgress(id,progress,downloadedSize,fileSize);
        // Log.e(TAG,"OnProgress id "+id+" "+progress);
-        updateInformation(id,progress,downloadedSize,fileSize);
+
     }
 
     @Override
@@ -223,7 +237,12 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             runninglistener.onSuccess(request);
         if(runningData.containsKey(request.getId())){
             updateInformation(request.getId(),100,request.getFileSize(),request.getFileSize());
+            DownloadInformation information = (DownloadInformation)runningData.get(request.getId());
+            information.setDownloadStatus(DownloadInformation.SUCCESS_DOWNLOAD);
+            successDownloadList.add(information);
             runningData.remove(request.getId());
+            if(successListener != null)
+                successListener.onSuccess(request);
         }
         isThereAnyRunningDownload();
         Log.e(TAG,"OnSuccess "+request.getId());

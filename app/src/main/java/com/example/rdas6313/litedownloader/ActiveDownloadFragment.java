@@ -83,6 +83,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
             progress = (int)((downloadedSize*100)/fileSize);
         DownloadInformation information = new DownloadInformation(title,progress,fileSize,downloadedSize);
         information.setId(id);
+        information.setDownloadStatus(DownloadInformation.RESUME_DOWNLOAD);
         information.setDownloadUrl(downlaod_url);
         information.setSavePath(save_Path);
         adapter.add(information);
@@ -120,7 +121,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     }
 
     @Override
-    public void onGettingPauseErrorDownloads(ArrayList list) {}
+    public void onGettingDownloads(ArrayList list) {}
 
 
 

@@ -1,13 +1,10 @@
 package com.example.rdas6313.litedownloader;
 
 
-import android.Manifest;
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
-import android.os.Environment;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -20,8 +17,6 @@ import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 
@@ -44,16 +39,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final String PAUSE_ERROR_FRAG = "pause_error_fagment";
     private PauseErrorFragment pauseErrorFragment;
 
-    private ArrayList<DownloadInformation> list;
-    private boolean alreadySentDataToService;
+    private ArrayList<DownloadInformation> successList;
+    private ArrayList<DownloadInformation> pauseErrorList;
+    private boolean alreadySentDataToServiceForPauseError;
+    private boolean alreadySentDataToServiceForSuccess;
 
     private final int PAUSE_ERROR_LOADER_ID = 1;
+    private final int SUCCESS_LOADER_ID = 2;
 
     private ViewPager pager;
-    private final int NUM_OF_PAGE = 2;
     private PagerAdapter pagerAdapter;
 
     private TabLayout tabLayout;
+
+    private SuccessDownloadFragment successDownloadFragment;
 
 
     @Override
@@ -61,16 +60,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        alreadySentDataToService = false;
+        alreadySentDataToServiceForPauseError = false;
+        alreadySentDataToServiceForSuccess = false;
 
         activeDownloadFragment = new ActiveDownloadFragment();
         pauseErrorFragment = new PauseErrorFragment();
+        successDownloadFragment = new SuccessDownloadFragment();
 
         addDownloadBtn = (FloatingActionButton)findViewById(R.id.addDownloadBtn);
         addDownloadBtn.setOnClickListener(this);
         Utilities.changeActivityAliveValue(true,getApplication());
         if(!Utilities.isServiceAlive(getApplication())){
             getSupportLoaderManager().initLoader(PAUSE_ERROR_LOADER_ID,null,this);
+            getSupportLoaderManager().initLoader(SUCCESS_LOADER_ID,null,this);
             Intent intent = new Intent(this,BackgroundDownloaderService.class);
             startService(intent);
             bindService(intent,connection,0);
@@ -106,9 +108,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             isbound = true;
             BackgroundDownloaderService.MyBinder object = (BackgroundDownloaderService.MyBinder)binder;
             service = object.getService();
-            if(list != null && !alreadySentDataToService){
-                service.setPauseErrorData(list);
-                alreadySentDataToService = true;
+            if(pauseErrorList != null && !alreadySentDataToServiceForPauseError){
+                service.setPauseErrorData(pauseErrorList);
+                alreadySentDataToServiceForPauseError = true;
+            }
+            if(successList != null && !alreadySentDataToServiceForSuccess){
+                service.setSuccessDownloadList(successList);
+                alreadySentDataToServiceForSuccess = true;
             }
             Log.e(TAG,"OnService Connected");
         }
@@ -139,30 +145,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public Loader onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this, DownloaderContract.PausedError.CONTENT_URI,null,null,null,null);
+        switch (id){
+            case PAUSE_ERROR_LOADER_ID:
+                return new CursorLoader(this, DownloaderContract.PausedError.CONTENT_URI,null,null,null,null);
+            case SUCCESS_LOADER_ID:
+                return new CursorLoader(this,DownloaderContract.Success.CONTENT_URI,null,null,null,null);
+        }
+        return null;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        list = Utilities.ChangeCursorToArrayListForPauseError(data);
+        switch (loader.getId()){
+            case PAUSE_ERROR_LOADER_ID:
+                pauseErrorList = Utilities.ChangeCursorToArrayListForPauseError(data);
+                if(service != null) {
+                    service.setPauseErrorData(pauseErrorList);
+                    alreadySentDataToServiceForPauseError = true;
+                    pauseErrorList.clear();
+                    pauseErrorList = null;
+                }
+                break;
+            case SUCCESS_LOADER_ID:
+                successList = Utilities.changeCursorToArrayListForSuccess(data);
+                if(service != null){
+                    service.setSuccessDownloadList(successList);
+                    alreadySentDataToServiceForSuccess = true;
+                    successList.clear();
+                    successList = null;
+                }
+                break;
+        }
         if(data != null)
             data.close();
-        if(service != null) {
-            service.setPauseErrorData(list);
-            alreadySentDataToService = true;
-        }
         Log.e(TAG,"On LOAD FINISHED");
     }
 
 
     @Override
     public void onLoaderReset(Loader loader) {
+        alreadySentDataToServiceForSuccess = false;
+        alreadySentDataToServiceForSuccess = false;
     }
 
      private class PagerAdapter extends FragmentStatePagerAdapter{
 
          private final String ACTIVE_DOWNLOAD_TITLE = "OnGoing";
          private final String PAUSE_ERROR_DOWNLOAD_TITLE = "Paused/Error";
+         private final String SUCCESS_DOWNLOAD_TITLE = "Success";
+         private final int NUM_OF_PAGE = 3;
 
         public PagerAdapter(FragmentManager fm) {
             super(fm);
@@ -175,6 +206,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return activeDownloadFragment;
                 case 1:
                     return pauseErrorFragment;
+                case 2:
+                    return successDownloadFragment;
                 default:
                     return null;
             }
@@ -192,6 +225,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                      return ACTIVE_DOWNLOAD_TITLE;
                  case 1:
                      return PAUSE_ERROR_DOWNLOAD_TITLE;
+                 case 2:
+                     return SUCCESS_DOWNLOAD_TITLE;
                  default:
                      return null;
              }

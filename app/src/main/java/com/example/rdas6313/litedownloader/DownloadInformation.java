@@ -20,6 +20,7 @@ public class DownloadInformation implements Parcelable {
     public final static int PAUSE_DOWNLOAD = -1;
     public final static int RESUME_DOWNLOAD = 1;
     public final static int CANCEL_DOWNLOAD = 0;
+    public final static int SUCCESS_DOWNLOAD = 2;
 
 
     public DownloadInformation(DownloadInformation information){

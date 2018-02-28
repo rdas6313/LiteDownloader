@@ -78,7 +78,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        DownloadInformation information = data.get(position);
+        DownloadInformation information = (DownloadInformation) data.get(position);
         holder.setData(information);
     }
 
@@ -111,8 +111,10 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
                 dbutton.setImageResource(R.drawable.ic_pause_black_24dp);
             else if(data.getDownloadStatus() == DownloadInformation.PAUSE_DOWNLOAD)
                 dbutton.setImageResource(R.drawable.ic_play_arrow_black_24dp);
-            else
+            else if(data.getDownloadStatus() == DownloadInformation.CANCEL_DOWNLOAD)
                 dbutton.setImageResource(R.drawable.ic_replay_black_24dp);
+            else
+                dbutton.setImageResource(R.drawable.ic_folder_black_24dp);
 
             title.setText(data.getTitle());
             downloadSizeAndProgress.setText(context.getString(R.string.size_and_progress,data.getDownloadedSize(),data.getFileSize(),data.getProgress()));

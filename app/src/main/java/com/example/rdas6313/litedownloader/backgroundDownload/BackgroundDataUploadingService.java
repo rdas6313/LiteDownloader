@@ -33,6 +33,32 @@ public class BackgroundDataUploadingService extends IntentService {
             ArrayList<DownloadInformation>list = intent.getParcelableArrayListExtra(Utilities.UPLOAD_PAUSE_ERROR_KEY);
             uploadPauseErrorData(list);
         }
+        if(intent != null && intent.hasExtra(Utilities.UPLOAD_SUCCESS_KEY)){
+            ArrayList list = intent.getParcelableArrayListExtra(Utilities.UPLOAD_SUCCESS_KEY);
+            uploadSuccessData(list);
+        }
+    }
+
+    private void uploadSuccessData(ArrayList list){
+        getContentResolver().delete(DownloaderContract.Success.CONTENT_URI,null,null);
+        if(list == null || list.size() == 0)
+            return;
+        ContentValues values[] = new ContentValues[list.size()];
+
+        for(int i=0;i<list.size();i++){
+            ContentValues value = new ContentValues();
+            DownloadInformation information = (DownloadInformation) list.get(i);
+//            Log.e(TAG,information.getTitle()+" "+information.getFileSize()+" "+information.getProgress()+" "+
+//            information.getDownloadStatus());
+            value.put(DownloaderContract.Success.TITLE,information.getTitle());
+            value.put(DownloaderContract.Success.DOWNLOAD_URL,information.getDownloadUrl());
+            value.put(DownloaderContract.Success.SAVE_URI,information.getSavePath());
+            value.put(DownloaderContract.Success.FILESIZE,information.getFileSize());
+            values[i] = value;
+        }
+
+        getContentResolver().bulkInsert(DownloaderContract.Success.CONTENT_URI,values);
+
     }
 
     private void uploadPauseErrorData(ArrayList<DownloadInformation>list){

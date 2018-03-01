@@ -148,7 +148,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     @Override
     public void onCreate() {
         super.onCreate();
-        manager = Manager.getInstance(2);
+        manager = Manager.getInstance(Runtime.getRuntime().availableProcessors());
         manager.bind(this);
         runningData = new HashMap();
         pauseErrorData = new HashMap();

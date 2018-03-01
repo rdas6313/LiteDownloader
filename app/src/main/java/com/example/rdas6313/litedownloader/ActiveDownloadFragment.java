@@ -6,6 +6,7 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,7 +17,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
+import com.example.litedownloaderapi.DownloadCode;
 import com.example.litedownloaderapi.Manager;
 import com.example.litedownloaderapi.Request;
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
@@ -28,13 +31,14 @@ import java.util.ArrayList;
  * Created by rdas6313 on 9/2/18.
  */
 
-public class ActiveDownloadFragment extends Fragment implements CallBackListener,ButtonListener{
+public class ActiveDownloadFragment extends Fragment implements CallBackListener,ButtonListener,View.OnClickListener{
 
     private final String TAG = ActiveDownloadFragment.class.getName();
 
     private RecyclerView recyclerView;
     private RecyclerView.LayoutManager layoutManager;
     private Adapter adapter;
+    private FloatingActionButton addDownloadBtn;
     private BackgroundDownloaderService service;
 
 
@@ -42,6 +46,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.activedownload_fragment,container,false);
+        addDownloadBtn = (FloatingActionButton)root.findViewById(R.id.addDownloadBtn);
         recyclerView = (RecyclerView)root.findViewById(R.id.listView);
         return root;
     }
@@ -53,6 +58,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
         adapter = new Adapter(getContext(),this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
+        addDownloadBtn.setOnClickListener(this);
 //        listener = (CommunicationListener) getContext();
         ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.RIGHT) {
             @Override
@@ -111,7 +117,11 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     @Override
     public void onError(int id, int errorCode, String errorMsg,Object object) {
         Log.e(TAG,"Id "+id+" "+errorCode+" "+errorMsg);
-        adapter.remove(adapter.getAdapterPositionByDownloadId(id));
+        if(errorCode != DownloadCode.DOWNLOAD_INTERRUPT_ERROR){
+            int pos = adapter.getAdapterPositionByDownloadId(id);
+            if(pos != -1)
+                adapter.remove(pos);
+        }
     }
 
     @Override
@@ -132,9 +142,12 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
         switch (status){
             case DownloadInformation.RESUME_DOWNLOAD:
                 information.setDownloadStatus(DownloadInformation.PAUSE_DOWNLOAD);
-                /*listener.onpauseDownload(information.getId(),status);//sending download id*/
                 if(service != null){
-                    service.pauseDownload(information.getId());
+                    boolean isPaused = service.pauseDownload(information.getId());
+                    if(isPaused)
+                        adapter.remove(id);
+                    else
+                        Toast.makeText(getContext(), R.string.unableTopause,Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
@@ -174,4 +187,9 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
         }
     };
 
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent(getContext(),addDownloadActivity.class);
+        startActivity(intent);
+    }
 }

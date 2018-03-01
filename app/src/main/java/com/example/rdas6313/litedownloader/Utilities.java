@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDataUploadingService;
@@ -122,6 +124,12 @@ public final class Utilities {
         intent.putParcelableArrayListExtra(UPLOAD_SUCCESS_KEY,successData);
         intent.putParcelableArrayListExtra(UPLOAD_PAUSE_ERROR_KEY,pauseErrorList);
         context.startService(intent);
+    }
+
+    public static boolean checkIfInternetAvailable(Context context){
+        ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnected();
     }
 
 

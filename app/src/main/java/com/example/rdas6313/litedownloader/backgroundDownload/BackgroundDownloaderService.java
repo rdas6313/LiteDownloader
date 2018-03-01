@@ -6,12 +6,14 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.litedownloaderapi.DownloadCode;
 import com.example.litedownloaderapi.Interfaces.DownloadEventListener;
 import com.example.litedownloaderapi.Manager;
 import com.example.litedownloaderapi.Request;
 import com.example.rdas6313.litedownloader.DownloadInformation;
+import com.example.rdas6313.litedownloader.R;
 import com.example.rdas6313.litedownloader.Utilities;
 
 import java.util.ArrayList;
@@ -72,13 +74,23 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         return informations;
     }
 
-    public void pauseDownload(int id){
+    public boolean pauseDownload(int id){
         if(manager != null) {
-            manager.pause(id);
+            boolean isPaused = manager.pause(id);
+            if(isPaused){
+                PauseAndErrorMethod(id,DownloadCode.DOWNLOAD_INTERRUPT_ERROR,"Paused Download");
+                Log.e(TAG,"Paused Download "+id);
+            }
+            return isPaused;
         }
+        return false;
     }
 
-    public void startDownload(String filename,String download_url,String saveUri,long filesize,long downloadedSize){
+    public boolean startDownload(String filename,String download_url,String saveUri,long filesize,long downloadedSize){
+        if(!Utilities.checkIfInternetAvailable(getApplicationContext())) {
+            Toast.makeText(getApplicationContext(), R.string.checkInternet, Toast.LENGTH_SHORT).show();
+            return false;
+        }
         Utilities.changeServiceAliveValue(true,getApplication());
         int progress = 0;
         if(filesize>0)
@@ -95,6 +107,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             runninglistener.onAddDownload(id,filename,download_url,saveUri,filesize,downloadedSize);
 
         Log.e(TAG,"Start Download Called");
+        return true;
     }
 
     public void removePausedErrorDownload(int id){
@@ -205,6 +218,30 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     @Override
     public void onError(int id, int errorCode, String errorMsg) {
+        if(errorCode != DownloadCode.DOWNLOAD_INTERRUPT_ERROR){
+            PauseAndErrorMethod(id,errorCode,errorMsg);
+        }
+        Log.e(TAG,"OnError "+id+" "+errorCode+" "+errorMsg);
+    }
+
+    @Override
+    public void onSuccess(Request request) {
+        if(runninglistener != null)
+            runninglistener.onSuccess(request);
+        if(runningData.containsKey(request.getId())){
+            updateInformation(request.getId(),100,request.getFileSize(),request.getFileSize());
+            DownloadInformation information = (DownloadInformation)runningData.get(request.getId());
+            information.setDownloadStatus(DownloadInformation.SUCCESS_DOWNLOAD);
+            successDownloadList.add(information);
+            runningData.remove(request.getId());
+            if(successListener != null)
+                successListener.onSuccess(request);
+        }
+        isThereAnyRunningDownload();
+        Log.e(TAG,"OnSuccess "+request.getId());
+    }
+
+    private void PauseAndErrorMethod(int id,int errorCode,String errorMsg){
         if(runningData.containsKey(id)){
             if(runninglistener != null)
                 runninglistener.onError(id,errorCode,errorMsg,null);
@@ -228,24 +265,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         }
 
         isThereAnyRunningDownload();
-        Log.e(TAG,"OnError "+id+" "+errorCode+" "+errorMsg);
-    }
-
-    @Override
-    public void onSuccess(Request request) {
-        if(runninglistener != null)
-            runninglistener.onSuccess(request);
-        if(runningData.containsKey(request.getId())){
-            updateInformation(request.getId(),100,request.getFileSize(),request.getFileSize());
-            DownloadInformation information = (DownloadInformation)runningData.get(request.getId());
-            information.setDownloadStatus(DownloadInformation.SUCCESS_DOWNLOAD);
-            successDownloadList.add(information);
-            runningData.remove(request.getId());
-            if(successListener != null)
-                successListener.onSuccess(request);
-        }
-        isThereAnyRunningDownload();
-        Log.e(TAG,"OnSuccess "+request.getId());
     }
 
 

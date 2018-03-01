@@ -26,7 +26,7 @@ import com.example.rdas6313.litedownloader.data.DownloaderContract;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener,LoaderManager.LoaderCallbacks<Cursor>{
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>{
 
     private final String TAG = MainActivity.class.getName();
 
@@ -34,7 +34,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ActiveDownloadFragment activeDownloadFragment;
     private boolean isbound;
     private BackgroundDownloaderService service;
-    private FloatingActionButton addDownloadBtn;
 
     private final String PAUSE_ERROR_FRAG = "pause_error_fagment";
     private PauseErrorFragment pauseErrorFragment;
@@ -66,9 +65,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         activeDownloadFragment = new ActiveDownloadFragment();
         pauseErrorFragment = new PauseErrorFragment();
         successDownloadFragment = new SuccessDownloadFragment();
-
-        addDownloadBtn = (FloatingActionButton)findViewById(R.id.addDownloadBtn);
-        addDownloadBtn.setOnClickListener(this);
         Utilities.changeActivityAliveValue(true,getApplication());
         if(!Utilities.isServiceAlive(getApplication())){
             getSupportLoaderManager().initLoader(PAUSE_ERROR_LOADER_ID,null,this);
@@ -126,12 +122,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Log.e(TAG,"OnService DisConnected");
         }
     };
-
-    @Override
-    public void onClick(View v) {
-        Intent intent = new Intent(this,addDownloadActivity.class);
-        startActivity(intent);
-    }
 
     @Override
     protected void onDestroy() {

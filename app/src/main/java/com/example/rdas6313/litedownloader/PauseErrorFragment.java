@@ -89,13 +89,17 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
         switch (status){
             case DownloadInformation.CANCEL_DOWNLOAD:
             case DownloadInformation.PAUSE_DOWNLOAD:
-                information.setDownloadStatus(DownloadInformation.RESUME_DOWNLOAD);
                 //listener.onresumeDownload(information.getId(),status,information.getDownloadUrl(),information.getSavePath(),information.getTitle(),information.getFileSize(),information.getDownloadedSize());//sending download id here
                 if(service != null){
-                    service.removePausedErrorDownload(information.getId());
-                    service.startDownload(information.getTitle(),information.getDownloadUrl(),information.getSavePath(),information.getFileSize(),information.getDownloadedSize());
+                    boolean isStarted = service.startDownload(information.getTitle(),information.getDownloadUrl(),information.getSavePath(),information.getFileSize(),information.getDownloadedSize());
+                    if(isStarted){
+                        //information.setDownloadStatus(DownloadInformation.RESUME_DOWNLOAD);
+                        service.removePausedErrorDownload(information.getId());
+                        adapter.remove(id);
+                    }
+
                 }
-                adapter.remove(id);
+
                 break;
         }
     }

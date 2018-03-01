@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -19,12 +20,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
+import android.widget.Toast;
 
 import com.example.litedownloaderapi.Request;
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 import com.example.rdas6313.litedownloader.backgroundDownload.CallBackListener;
 import com.example.rdas6313.litedownloader.data.DownloaderContract;
 
+import java.io.File;
 import java.util.ArrayList;
 
 
@@ -33,12 +37,11 @@ import java.util.ArrayList;
  */
 public class SuccessDownloadFragment extends Fragment implements ButtonListener,CallBackListener {
 
-    private int LOADER_ID = 2;
+
     private RecyclerView recyclerView;
     private Adapter adapter;
     private RecyclerView.LayoutManager layoutManager;
     private BackgroundDownloaderService service;
-    private boolean isDataLoadedFromService;
     private boolean isAdapterAlreadyLoaded;
     private final String TAG = SuccessDownloadFragment.class.getName();
 
@@ -61,13 +64,30 @@ public class SuccessDownloadFragment extends Fragment implements ButtonListener,
         layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
-        isDataLoadedFromService = false;
 
     }
 
     @Override
     public void itemButtonClick(int id, View v, int status) {
-
+        DownloadInformation information = (DownloadInformation)adapter.getDownloadInformation(id);
+        if(information != null) {
+            String uri_path = information.getSavePath()+"/"+information.getTitle();
+            if(!Utilities.checkFileExist(uri_path)){
+                Toast.makeText(getContext(), R.string.file_not_exists,Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Uri uri = Uri.fromFile(new File(uri_path));
+            String mimeType = Utilities.getMimeType(uri_path);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            if(mimeType == null)
+                intent.setDataAndType(uri,"*/*");
+            else
+                intent.setDataAndType(uri,mimeType);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            if(intent.resolveActivity(getContext().getPackageManager()) != null) {
+                startActivity(intent);
+            }
+        }
     }
 
     @Override

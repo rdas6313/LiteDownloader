@@ -7,11 +7,13 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDataUploadingService;
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 import com.example.rdas6313.litedownloader.data.DownloaderContract;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -130,6 +132,19 @@ public final class Utilities {
         ConnectivityManager cm = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
+    }
+
+    public static String getMimeType(String uri){
+        uri = uri.replaceAll(" ","_");
+       // Log.e(TAG,"URI "+uri);
+        String extension = MimeTypeMap.getFileExtensionFromUrl(uri);
+        if(extension != null)
+            return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        return null;
+    }
+    public static boolean checkFileExist(String uri){
+        File file = new File(uri);
+        return file.exists();
     }
 
 

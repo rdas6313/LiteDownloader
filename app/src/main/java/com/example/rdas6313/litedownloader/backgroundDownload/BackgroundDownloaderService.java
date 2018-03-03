@@ -110,6 +110,12 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         return true;
     }
 
+    public void removeSuccessfullDownload(int id){
+        if(successDownloadList != null && successDownloadList.size() > 0){
+            successDownloadList.remove(id);
+        }
+    }
+
     public void removePausedErrorDownload(int id){
         if(pauseErrorData != null && pauseErrorData.containsKey(id)){
             pauseErrorData.remove(id);

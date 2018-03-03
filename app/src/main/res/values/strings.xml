@@ -7,4 +7,8 @@
     <string name="unableTopause">Unable To Pause Download</string>
     <string name="checkInternet">Check Your Internet Connection</string>
     <string name="file_not_exists">File Not Found</string>
+    <string name="enter_url_hint">Url</string>
+    <string name="save_location_hint">Save Location</string>
+    <string name="file_name_hint">File Name</string>
+    <string name="fileProvider_auth">com.example.rdas6313.litedownloader.FileProvider</string>
 </resources>

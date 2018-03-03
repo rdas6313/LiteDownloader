@@ -6,12 +6,14 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
+import android.support.v4.content.FileProvider;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -86,20 +88,30 @@ public class SuccessDownloadFragment extends Fragment implements ButtonListener,
     @Override
     public void itemButtonClick(int id, View v, int status) {
         DownloadInformation information = (DownloadInformation)adapter.getDownloadInformation(id);
+        openFile(information);
+    }
+
+    private void openFile(DownloadInformation information){
         if(information != null) {
             String uri_path = information.getSavePath()+"/"+information.getTitle();
             if(!Utilities.checkFileExist(uri_path)){
                 Toast.makeText(getContext(), R.string.file_not_exists,Toast.LENGTH_SHORT).show();
                 return;
             }
-            Uri uri = Uri.fromFile(new File(uri_path));
+            Uri uri = null;
             String mimeType = Utilities.getMimeType(uri_path);
             Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.N){
+                uri = FileProvider.getUriForFile(getContext(),getString(R.string.fileProvider_auth),new File(uri_path));
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            }else{
+                uri = Uri.fromFile(new File(uri_path));
+            }
             if(mimeType == null)
                 intent.setDataAndType(uri,"*/*");
             else
                 intent.setDataAndType(uri,mimeType);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if(intent.resolveActivity(getContext().getPackageManager()) != null) {
                 startActivity(intent);
             }

@@ -1,5 +1,6 @@
 package com.example.rdas6313.litedownloader;
 
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -7,6 +8,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,8 +17,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.litedownloaderapi.DownloadCode;
@@ -41,6 +46,11 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     private FloatingActionButton addDownloadBtn;
     private BackgroundDownloaderService service;
 
+    private EditText urlEditText,fileNameEditText;
+    private Button downloadBtn;
+    private ImageButton cancelBtn,file_select_Btn;
+    private TextView file_location_view;
+    private TextInputLayout urlLayout,filenameLayout;
 
     @Nullable
     @Override
@@ -189,7 +199,41 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
 
     @Override
     public void onClick(View v) {
-        Intent intent = new Intent(getContext(),addDownloadActivity.class);
-        startActivity(intent);
+       /* Intent intent = new Intent(getContext(),addDownloadActivity.class);
+        startActivity(intent);*/
+       addDownloadDialog();
+    }
+
+    private void addDownloadDialog(){
+        final Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.add_download_dialog);
+        ImageButton cancelBtn = dialog.findViewById(R.id.cancel_dialog);
+        cancelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        urlEditText = dialog.findViewById(R.id.editTextUrl);
+        urlLayout = dialog.findViewById(R.id.editTextUrlLayout);
+        file_location_view = dialog.findViewById(R.id.file_location_View);
+        file_select_Btn = dialog.findViewById(R.id.file_location_Btn);
+        file_select_Btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //get The File Path
+            }
+        });
+        fileNameEditText = dialog.findViewById(R.id.editTextFilename);
+        filenameLayout = dialog.findViewById(R.id.editTextFilenameLayout);
+        downloadBtn = dialog.findViewById(R.id.downloadBtn);
+        downloadBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //start Download
+            }
+        });
+        dialog.show();
     }
 }

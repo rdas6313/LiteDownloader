@@ -3,4 +3,6 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="dialog_background_color">#E3F2FD</color>
+    <color name="download_Btn_color">#1E88E5</color>
 </resources>

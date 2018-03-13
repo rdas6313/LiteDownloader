@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:width="40dp" android:height="30dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@android:color/darker_gray"/>
+            <corners android:bottomRightRadius="4dp"
+                android:topRightRadius="4dp"/>
+        </shape>
+
+    </item>
+    <item android:drawable="@drawable/ic_folder_black_24dp" android:width="24dp"
+        android:height="24dp" android:gravity="center"/>
+</layer-list>

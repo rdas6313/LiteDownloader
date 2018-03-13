@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -27,10 +28,13 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_download);
         ActionBar actionBar = getSupportActionBar();
-        if(actionBar != null)
+        if(actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setTitle("Add Download");
+            actionBar.setElevation(0);
+        }
         urlView = (EditText)findViewById(R.id.urlView);
-        filenameView = (EditText)findViewById(R.id.filenameView);
+        filenameView = (EditText)findViewById(R.id.file_name_view);
         Btn = (Button)findViewById(R.id.downloadBtn);
         Btn.setOnClickListener(this);
     }

@@ -4,8 +4,12 @@ import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TextInputLayout;
@@ -20,6 +24,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,7 +35,13 @@ import com.example.litedownloaderapi.Request;
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 import com.example.rdas6313.litedownloader.backgroundDownload.CallBackListener;
 
+import net.rdrei.android.dirchooser.DirectoryChooserConfig;
+import net.rdrei.android.dirchooser.DirectoryChooserFragment;
+
+import java.io.File;
 import java.util.ArrayList;
+
+
 
 /**
  * Created by rdas6313 on 9/2/18.
@@ -199,41 +210,28 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
 
     @Override
     public void onClick(View v) {
-       /* Intent intent = new Intent(getContext(),addDownloadActivity.class);
-        startActivity(intent);*/
-       addDownloadDialog();
+        Intent intent = new Intent(getContext(),addDownloadActivity.class);
+        startActivity(intent);
+      // addDownloadDialog();
     }
+    private void chooseDir(){
+        final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
+                .newDirectoryName("New Folder")
+                .allowNewDirectoryNameModification(true)
+                .build();
+        final DirectoryChooserFragment mDialog = DirectoryChooserFragment.newInstance(config);
+        mDialog.setDirectoryChooserListener(new DirectoryChooserFragment.OnFragmentInteractionListener() {
+            @Override
+            public void onSelectDirectory(@NonNull String path) {
+                file_location_view.setText(path);
+                mDialog.dismiss();
+            }
 
-    private void addDownloadDialog(){
-        final Dialog dialog = new Dialog(getContext());
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.add_download_dialog);
-        ImageButton cancelBtn = dialog.findViewById(R.id.cancel_dialog);
-        cancelBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                dialog.dismiss();
+            public void onCancelChooser() {
+                mDialog.dismiss();
             }
         });
-        urlEditText = dialog.findViewById(R.id.editTextUrl);
-        urlLayout = dialog.findViewById(R.id.editTextUrlLayout);
-        file_location_view = dialog.findViewById(R.id.file_location_View);
-        file_select_Btn = dialog.findViewById(R.id.file_location_Btn);
-        file_select_Btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //get The File Path
-            }
-        });
-        fileNameEditText = dialog.findViewById(R.id.editTextFilename);
-        filenameLayout = dialog.findViewById(R.id.editTextFilenameLayout);
-        downloadBtn = dialog.findViewById(R.id.downloadBtn);
-        downloadBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //start Download
-            }
-        });
-        dialog.show();
+        mDialog.show(getActivity().getFragmentManager(),null);
     }
 }

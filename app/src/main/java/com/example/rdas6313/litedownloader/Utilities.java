@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
 /**
  * Created by rdas6313 on 11/2/18.
  */
@@ -146,5 +147,6 @@ public final class Utilities {
         File file = new File(uri);
         return file.exists();
     }
+
 
 }

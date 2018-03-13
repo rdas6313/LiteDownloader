@@ -2,9 +2,11 @@
 <resources>
     <color name="colorPrimary">#607D8B</color>
     <color name="colorPrimaryDark">#37474F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#1E88E5</color>
     <color name="dialog_background_color">#E3F2FD</color>
-    <color name="download_Btn_color">#1E88E5</color>
+    <color name="download_Btn_color">#455A64</color>
     <color name="green">#43b22a</color>
     <color name="color_gray">#EEEEEE</color>
+    <color name="add_download_background">#607D8B</color>
+    <color name="editText_Active_color">#455A64</color>
 </resources>

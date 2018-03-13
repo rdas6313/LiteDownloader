@@ -5,7 +5,7 @@
         android:bottomRightRadius="4dp"
         android:topRightRadius="4dp"
         android:topLeftRadius="4dp"/>
-    <solid android:color="#455A64"/>
+    <solid android:color="@color/download_Btn_color"/>
 
     <!--
     <gradient android:startColor="@color/bright_blue"

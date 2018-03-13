@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape android:shape="rectangle"
     xmlns:android="http://schemas.android.com/apk/res/android" >
-    <solid android:color="#607D8B"/>
+    <solid android:color="@color/add_download_background"/>
     <!--
     <gradient android:startColor="#006064"
         android:endColor="#7CB342"

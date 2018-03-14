@@ -3,26 +3,39 @@ package com.example.rdas6313.litedownloader;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 
+import net.rdrei.android.dirchooser.DirectoryChooserConfig;
+import net.rdrei.android.dirchooser.DirectoryChooserFragment;
+
 import org.w3c.dom.Text;
 
-public class addDownloadActivity extends AppCompatActivity implements View.OnClickListener {
+public class addDownloadActivity extends AppCompatActivity implements View.OnClickListener,TextWatcher,View.OnTouchListener {
 
-    private EditText urlView,filenameView;
+    private final String TAG = addDownloadActivity.class.getName();
+
+    private EditText urlView,filenameView,dir;
     private Button Btn;
     private BackgroundDownloaderService service;
+    private TextView fileSize_View;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,7 +47,12 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
             actionBar.setElevation(0);
         }
         urlView = (EditText)findViewById(R.id.urlView);
+        urlView.addTextChangedListener(this);
+        urlView.setOnTouchListener(this);
         filenameView = (EditText)findViewById(R.id.file_name_view);
+        dir = (EditText)findViewById(R.id.save_folder);
+        dir.setOnTouchListener(this);
+        fileSize_View = (TextView)findViewById(R.id.fileSize);
         Btn = (Button)findViewById(R.id.downloadBtn);
         Btn.setOnClickListener(this);
     }
@@ -103,4 +121,69 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
             service = null;
         }
     };
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+    @Override
+    public void afterTextChanged(Editable s) {
+        //Todo:- start AsyncTaskLoader Here
+    }
+
+    private void chooseDir(){
+        final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
+                .newDirectoryName("New Folder")
+                .allowNewDirectoryNameModification(true)
+                .build();
+        final DirectoryChooserFragment mDialog = DirectoryChooserFragment.newInstance(config);
+        mDialog.setDirectoryChooserListener(new DirectoryChooserFragment.OnFragmentInteractionListener() {
+            @Override
+            public void onSelectDirectory(@NonNull String path) {
+                dir.setText(path);
+                mDialog.dismiss();
+            }
+
+            @Override
+            public void onCancelChooser() {
+                mDialog.dismiss();
+            }
+        });
+        mDialog.show(getFragmentManager(),null);
+    }
+
+    private void clickDrawable(View v){
+        switch (v.getId()){
+            case R.id.urlView:
+                Log.e(TAG,"Url View Drawable Clicked");
+                break;
+            case R.id.save_folder:
+                chooseDir();
+                break;
+        }
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+       return clickRightDrawable(event,v);
+    }
+
+    private boolean clickRightDrawable(MotionEvent event,View v){
+        EditText editText = (EditText)v;
+        Drawable drawable[] = editText.getCompoundDrawables();
+        if(drawable != null && drawable.length == 4){
+            if(event.getAction() == MotionEvent.ACTION_DOWN){
+                int x = (int) event.getRawX();
+                if(x >= (editText.getRight() - drawable[2].getBounds().width())){
+                    clickDrawable(v);
+                    editText.setFocusable(true);
+                    editText.requestFocus();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

@@ -9,4 +9,5 @@
     <color name="color_gray">#EEEEEE</color>
     <color name="add_download_background">#607D8B</color>
     <color name="editText_Active_color">#455A64</color>
+    <color name="light_white">#ECEFF1</color>
 </resources>

@@ -212,26 +212,5 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     public void onClick(View v) {
         Intent intent = new Intent(getContext(),addDownloadActivity.class);
         startActivity(intent);
-      // addDownloadDialog();
-    }
-    private void chooseDir(){
-        final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
-                .newDirectoryName("New Folder")
-                .allowNewDirectoryNameModification(true)
-                .build();
-        final DirectoryChooserFragment mDialog = DirectoryChooserFragment.newInstance(config);
-        mDialog.setDirectoryChooserListener(new DirectoryChooserFragment.OnFragmentInteractionListener() {
-            @Override
-            public void onSelectDirectory(@NonNull String path) {
-                file_location_view.setText(path);
-                mDialog.dismiss();
-            }
-
-            @Override
-            public void onCancelChooser() {
-                mDialog.dismiss();
-            }
-        });
-        mDialog.show(getActivity().getFragmentManager(),null);
     }
 }

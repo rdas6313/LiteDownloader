@@ -40,7 +40,7 @@
         <EditText
             android:drawableRight="@drawable/ic_folder_black_24dp"
             android:background="@drawable/edit_text_background"
-            android:id="@+id/location"
+            android:id="@+id/save_folder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/EdiText_Style"

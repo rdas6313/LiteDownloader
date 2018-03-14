@@ -1,6 +1,9 @@
 package com.example.rdas6313.litedownloader;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.drawable.Drawable;
@@ -61,12 +64,17 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
         boolean isThereError = false;
         String url = urlView.getText().toString();
         String filename = filenameView.getText().toString();
+        String location = dir.getText().toString();
         if(TextUtils.isEmpty(url)) {
             urlView.setError("This Field Can't be empty");
             isThereError = true;
         }
         if(TextUtils.isEmpty(filename)) {
             filenameView.setError("This Field Can't be empty");
+            isThereError = true;
+        }
+        if(TextUtils.isEmpty(location)){
+            dir.setError("Select a Directory");
             isThereError = true;
         }
         return isThereError;
@@ -79,7 +87,7 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
         }
         String url = urlView.getText().toString();
         String filename = filenameView.getText().toString();
-        String save_uri = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+        String save_uri = dir.getText().toString();
         if(service != null){
             service.startDownload(filename,url,save_uri,0,0);
         }else{
@@ -154,10 +162,20 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
         mDialog.show(getFragmentManager(),null);
     }
 
+    private void pasteData(){
+        ClipboardManager clipboardManager = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        String pastedata = "";
+        if(clipboardManager.hasPrimaryClip()){
+            ClipData.Item item = clipboardManager.getPrimaryClip().getItemAt(0);
+            pastedata = item.getText().toString();
+        }
+        urlView.setText(pastedata);
+    }
+
     private void clickDrawable(View v){
         switch (v.getId()){
             case R.id.urlView:
-                Log.e(TAG,"Url View Drawable Clicked");
+                pasteData();
                 break;
             case R.id.save_folder:
                 chooseDir();

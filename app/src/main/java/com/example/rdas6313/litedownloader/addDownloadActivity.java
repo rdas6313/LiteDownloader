@@ -37,6 +37,7 @@ import net.rdrei.android.dirchooser.DirectoryChooserFragment;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -269,6 +270,18 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
         };
     }
 
+    private String getFileName(String url_address){
+        String filename = null;
+        try{
+            URL url = new URL(url_address);
+            File file = new File(url.getPath().toString());
+            filename = file.getName();
+        }catch (Exception e){
+            Log.e(TAG,"WRONG URL");
+        }
+        return filename;
+    }
+
     @Override
     public void onLoadFinished(Loader loader, Object data) {
         progressBar.setVisibility(View.GONE);
@@ -279,6 +292,9 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
         }
         long fileSize = (long)data;
         fileSize_View.setText(getString(R.string.addDownloadFileSize,fileSize,"Bytes"));
+        String url = urlView.getText().toString();
+        if(url.length()>0)
+            filenameView.setText(getFileName(url));
     }
 
     @Override

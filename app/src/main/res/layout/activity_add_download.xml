@@ -67,6 +67,13 @@
             android:text="Unknown Size"
             android:textColor="@android:color/black"
             android:textSize="20sp" />
+        <ProgressBar
+            android:visibility="gone"
+            android:id="@+id/loadProgressBar"
+            android:layout_margin="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
 
         <Button
             android:id="@+id/downloadBtn"

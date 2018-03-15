@@ -8,7 +8,15 @@
     <string name="checkInternet">Check Your Internet Connection</string>
     <string name="file_not_exists">File Not Found</string>
     <string name="enter_url_hint">Url</string>
-    <string name="save_location_hint">Save Location</string>
+    <string name="save_location_hint">Save Folder</string>
     <string name="file_name_hint">File Name</string>
     <string name="fileProvider_auth">com.example.rdas6313.litedownloader.FileProvider</string>
+    <string name="unknownSize">Unknown Size</string>
+    <string name="addDownloadFileSize">%1$d %2$s</string>
+    <string name="addDownloadUnableToFetch">Unable To Fetch File Size</string>
+    <string name="checkUrl">Check Your Url</string>
+    <string name="fectchDownloadSizeError">Error! Unable To Fetch Download Size</string>
+    <string name="unableToConnectError">Unable To Connect ! Response Error</string>
+    <string name="emptyFieldError">This Field Can\'t be empty</string>
+    <string name="selectDirError">Select a Directory</string>
 </resources>

@@ -7,9 +7,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -22,7 +26,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 
@@ -31,14 +37,23 @@ import net.rdrei.android.dirchooser.DirectoryChooserFragment;
 
 import org.w3c.dom.Text;
 
-public class addDownloadActivity extends AppCompatActivity implements View.OnClickListener,TextWatcher,View.OnTouchListener {
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 
-    private final String TAG = addDownloadActivity.class.getName();
+public class addDownloadActivity extends AppCompatActivity implements View.OnClickListener,View.OnFocusChangeListener,View.OnTouchListener,LoaderManager.LoaderCallbacks {
+
+    private final static String TAG = addDownloadActivity.class.getName();
+
+    private final int FETCH_DATA_INFO_LOADER_ID = 2012;
+    private final String DOWNLOAD_URL = "download_url";
 
     private EditText urlView,filenameView,dir;
     private Button Btn;
     private BackgroundDownloaderService service;
     private TextView fileSize_View;
+    private ProgressBar progressBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,8 +64,10 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
             actionBar.setTitle("Add Download");
             actionBar.setElevation(0);
         }
+        progressBar = (ProgressBar)findViewById(R.id.loadProgressBar);
+        progressBar.setVisibility(View.GONE);
         urlView = (EditText)findViewById(R.id.urlView);
-        urlView.addTextChangedListener(this);
+        urlView.setOnFocusChangeListener(this);
         urlView.setOnTouchListener(this);
         filenameView = (EditText)findViewById(R.id.file_name_view);
         dir = (EditText)findViewById(R.id.save_folder);
@@ -66,15 +83,15 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
         String filename = filenameView.getText().toString();
         String location = dir.getText().toString();
         if(TextUtils.isEmpty(url)) {
-            urlView.setError("This Field Can't be empty");
+            urlView.setError(getString(R.string.emptyFieldError));
             isThereError = true;
         }
         if(TextUtils.isEmpty(filename)) {
-            filenameView.setError("This Field Can't be empty");
+            filenameView.setError(getString(R.string.emptyFieldError));
             isThereError = true;
         }
         if(TextUtils.isEmpty(location)){
-            dir.setError("Select a Directory");
+            dir.setError(getString(R.string.selectDirError));
             isThereError = true;
         }
         return isThereError;
@@ -130,16 +147,7 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
         }
     };
 
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
-    @Override
-    public void afterTextChanged(Editable s) {
-        //Todo:- start AsyncTaskLoader Here
-    }
 
     private void chooseDir(){
         final DirectoryChooserConfig config = DirectoryChooserConfig.builder()
@@ -203,5 +211,92 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
             }
         }
         return false;
+    }
+
+    @Override
+    public Loader onCreateLoader(int id, Bundle args) {
+        final String download_url = args.getString(DOWNLOAD_URL);
+        return new AsyncTaskLoader(this) {
+            @Override
+            public Object loadInBackground() {
+                try{
+                    return loadDownloadData();
+                }catch (Exception e){
+                    Log.e(TAG,e.getMessage());
+                }
+                return null;
+            }
+
+            @Override
+            protected void onStartLoading() {
+                fileSize_View.setVisibility(View.GONE);
+                progressBar.setVisibility(View.VISIBLE);
+                forceLoad();
+            }
+
+            private long loadDownloadData(){
+                long file_size = 0;
+                HttpURLConnection connection = null;
+                URL url = null;
+                try{
+
+                    url = new URL(download_url);
+                    connection = (HttpURLConnection) url.openConnection();
+                    connection.connect();
+                    if(connection.getResponseCode() != HttpURLConnection.HTTP_OK){
+                        throw new Exception("Response Error "+connection.getResponseCode());
+                    }
+
+                    file_size = connection.getContentLength();
+
+                }catch (MalformedURLException e){
+                    Log.e(TAG,e.getMessage());
+                    urlView.setError(getString(R.string.checkUrl));
+                }catch (IOException e){
+                    Log.e(TAG,e.getMessage());
+                    Toast.makeText(getContext(),getString(R.string.fectchDownloadSizeError),Toast.LENGTH_SHORT).show();
+                }catch (Exception e){
+                    Log.e(TAG,e.getMessage());
+                    Toast.makeText(getContext(),getString(R.string.unableToConnectError),Toast.LENGTH_SHORT).show();
+                }finally {
+                    if(connection != null)
+                        connection.disconnect();
+                    if(url != null)
+                        url = null;
+                }
+                return file_size;
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader loader, Object data) {
+        progressBar.setVisibility(View.GONE);
+        fileSize_View.setVisibility(View.VISIBLE);
+        if(data == null) {
+            fileSize_View.setText(getString(R.string.addDownloadUnableToFetch));
+            return;
+        }
+        long fileSize = (long)data;
+        fileSize_View.setText(getString(R.string.addDownloadFileSize,fileSize,"Bytes"));
+    }
+
+    @Override
+    public void onLoaderReset(Loader loader) {
+        fileSize_View.setText(getString(R.string.unknownSize));
+    }
+
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        EditText editText = (EditText)v;
+        String url = editText.getText().toString();
+        if(!hasFocus && !TextUtils.isEmpty(url)){
+            if(Utilities.checkIfInternetAvailable(this)){
+                Bundle bundle = new Bundle();
+                bundle.putString(DOWNLOAD_URL,url);
+                getSupportLoaderManager().restartLoader(FETCH_DATA_INFO_LOADER_ID,bundle,this);
+            }else
+                Toast.makeText(this,getString(R.string.checkInternet),Toast.LENGTH_SHORT).show();
+        }
     }
 }

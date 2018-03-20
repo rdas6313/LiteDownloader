@@ -66,7 +66,6 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         setContentView(R.layout.activity_main);
         checkPermissions();
 
-        isbound = false;
         activeDownloadFragment = new ActiveDownloadFragment();
         pauseErrorFragment = new PauseErrorFragment();
         successDownloadFragment = new SuccessDownloadFragment();
@@ -114,15 +113,13 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     public void onPageSelected(int position) {
         switch (position){
             case 0:
-                if(activeDownloadFragment != null && !isbound){
+                if(activeDownloadFragment != null){
                     activeDownloadFragment.bindToService();
-                    isbound = true;
                 }
                 break;
             case 1:
-                if(activeDownloadFragment != null && isbound){
+                if(activeDownloadFragment != null){
                     activeDownloadFragment.unBindToService();
-                    isbound = false;
                 }
             case 2:
                 break;

@@ -57,6 +57,8 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     private FloatingActionButton addDownloadBtn;
     private BackgroundDownloaderService service;
 
+    private boolean isbound;
+
     private EditText urlEditText,fileNameEditText;
     private Button downloadBtn;
     private ImageButton cancelBtn,file_select_Btn;
@@ -100,6 +102,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
             }
         });
         touchHelper.attachToRecyclerView(recyclerView);
+        isbound = false;
     }
 
 
@@ -176,15 +179,32 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     }
 
     public void bindToService(){
+        if(isbound)
+            return;
+        isbound = true;
         Intent intent = new Intent(getContext(),BackgroundDownloaderService.class);
         getContext().bindService(intent,connection,0);
-        Log.e(TAG,"Bind To Service");
     }
 
     public void unBindToService(){
+        if(!isbound)
+            return;
+        isbound = false;
         if(service != null)
             service.setRunninglistener(null);
         getContext().unbindService(connection);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        bindToService();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        unBindToService();
     }
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -194,7 +214,6 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
             service = myBinder.getService();
             service.setRunninglistener(ActiveDownloadFragment.this);
             ArrayList list = service.getRunningDownloads();
-            Log.e(TAG,"ACTIVE LIST SIZE "+list.size());
             if(list != null && list.size()>0){
                 adapter.clearData();
                 adapter.add(list);

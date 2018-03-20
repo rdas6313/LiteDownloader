@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Lite Downloader</string>
-    <string name="size_and_progress">%1$d Bytes / %2$d Bytes (%3$d%%)</string>
+    <string name="size_and_progress">%1$s / %2$s (%3$d%%)</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
@@ -12,7 +12,6 @@
     <string name="file_name_hint">File Name</string>
     <string name="fileProvider_auth">com.example.rdas6313.litedownloader.FileProvider</string>
     <string name="unknownSize">Unknown Size</string>
-    <string name="addDownloadFileSize">%1$d %2$s</string>
     <string name="addDownloadUnableToFetch">Unable To Fetch File Size</string>
     <string name="checkUrl">Check Your Url</string>
     <string name="fectchDownloadSizeError">Error! Unable To Fetch Download Size</string>

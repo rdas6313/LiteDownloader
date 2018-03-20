@@ -297,7 +297,7 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
             return;
         }
         long fileSize = (long)data;
-        fileSize_View.setText(getString(R.string.addDownloadFileSize,fileSize,"Bytes"));
+        fileSize_View.setText(Utilities.convertSize(fileSize));
         String url = urlView.getText().toString();
         if(url.length()>0)
             filenameView.setText(getFileName(url));

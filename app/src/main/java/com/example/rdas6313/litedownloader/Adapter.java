@@ -117,7 +117,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>{
                 dbutton.setImageResource(R.drawable.ic_folder_black_24dp);
 
             title.setText(data.getTitle());
-            downloadSizeAndProgress.setText(context.getString(R.string.size_and_progress,data.getDownloadedSize(),data.getFileSize(),data.getProgress()));
+            downloadSizeAndProgress.setText(context.getString(R.string.size_and_progress,Utilities.convertSize(data.getDownloadedSize()),Utilities.convertSize(data.getFileSize()),data.getProgress()));
             progressBar.setProgress(data.getProgress());
         }
 

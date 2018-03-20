@@ -14,6 +14,7 @@ import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownload
 import com.example.rdas6313.litedownloader.data.DownloaderContract;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -157,5 +158,27 @@ public final class Utilities {
         return file.exists();
     }
 
+    public static String convertSize(long size){
+        long GB = ((long)1024*1024*1024);
+        long MB = ((long)1024*1024);
+        long KB = 1024;
+        double actual_size = 0;
+        String data = "";
+        DecimalFormat df = new DecimalFormat("#.##");
+        if(GB<=size){
+            actual_size = ((double) size/GB);
+            data = df.format(actual_size)+" "+"GB";
+
+        }else if(MB<=size){
+            actual_size = ((double)size/MB);
+            data = df.format(actual_size)+" "+"MB";
+        }else if(KB<=size){
+            actual_size = ((double)size/KB);
+            data = df.format(actual_size)+" "+"KB";
+        }else{
+            data = size+" "+"Bytes";
+        }
+        return data;
+    }
 
 }

@@ -105,6 +105,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
 
     @Override
     public void onAddDownload(int id, String title, String downlaod_url, String save_Path,long fileSize,long downloadedSize) {
+        Log.e(TAG,"Downlaod added");
         int progress = 0;
         if(fileSize>0)
             progress = (int)((downloadedSize*100)/fileSize);
@@ -174,16 +175,13 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    public void bindToService(){
         Intent intent = new Intent(getContext(),BackgroundDownloaderService.class);
         getContext().bindService(intent,connection,0);
+        Log.e(TAG,"Bind To Service");
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
+    public void unBindToService(){
         if(service != null)
             service.setRunninglistener(null);
         getContext().unbindService(connection);
@@ -196,6 +194,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
             service = myBinder.getService();
             service.setRunninglistener(ActiveDownloadFragment.this);
             ArrayList list = service.getRunningDownloads();
+            Log.e(TAG,"ACTIVE LIST SIZE "+list.size());
             if(list != null && list.size()>0){
                 adapter.clearData();
                 adapter.add(list);

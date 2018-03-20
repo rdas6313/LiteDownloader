@@ -1,6 +1,8 @@
 package com.example.rdas6313.litedownloader.backgroundDownload;
 
 import android.app.Service;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
@@ -15,6 +17,7 @@ import com.example.litedownloaderapi.Request;
 import com.example.rdas6313.litedownloader.DownloadInformation;
 import com.example.rdas6313.litedownloader.R;
 import com.example.rdas6313.litedownloader.Utilities;
+import com.example.rdas6313.litedownloader.data.DownloaderContract;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,26 +40,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         runninglistener = listener;
     }
 
-    public void setPauseErrorlistener(CallBackListener listener){
-        pauseErrorlistener = listener;
-    }
-
-    public void setSuccessDownloadListener(CallBackListener listener){
-        successListener = listener;
-    }
-
-    public void setSuccessDownloadList(ArrayList list){
-        if(list == null || list.size() == 0)
-            return;
-        successDownloadList.clear();
-        successDownloadList.addAll(list);
-        if(successListener != null)
-            successListener.onGettingDownloads(list);
-    }
-
-    public ArrayList getSuccessDownloadList(){
-        return successDownloadList;
-    }
 
     public ArrayList getRunningDownloads(){
         ArrayList<DownloadInformation>informations = new ArrayList<>();
@@ -66,13 +49,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         return informations;
     }
 
-    public ArrayList getPausedErrorDownloads(){
-        ArrayList<DownloadInformation>informations = new ArrayList<>();
-        for(Object key : pauseErrorData.keySet()){
-            informations.add((DownloadInformation) pauseErrorData.get(key));
-        }
-        return informations;
-    }
 
     public boolean pauseDownload(int id){
         if(manager != null) {
@@ -87,11 +63,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     }
 
     public boolean startDownload(String filename,String download_url,String saveUri,long filesize,long downloadedSize){
-        if(!Utilities.checkIfInternetAvailable(getApplicationContext())) {
-            Toast.makeText(getApplicationContext(), R.string.checkInternet, Toast.LENGTH_SHORT).show();
-            return false;
-        }
-        Utilities.changeServiceAliveValue(true,getApplication());
         int progress = 0;
         if(filesize>0)
             progress = (int)((downloadedSize*100)/filesize);
@@ -110,17 +81,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         return true;
     }
 
-    public void removeSuccessfullDownload(int id){
-        if(successDownloadList != null && successDownloadList.size() > 0){
-            successDownloadList.remove(id);
-        }
-    }
-
-    public void removePausedErrorDownload(int id){
-        if(pauseErrorData != null && pauseErrorData.containsKey(id)){
-            pauseErrorData.remove(id);
-        }
-    }
 
     public void removeRunningDownload(int id){
         if(runningData != null)
@@ -131,22 +91,8 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     private void isThereAnyRunningDownload(){
         if(runningData != null && runningData.isEmpty()) {
-            Utilities.changeServiceAliveValue(false, getApplication());
-            if(!Utilities.isActivityAlive(getApplication())) {
-                stopSelf();
-            }
+            stopSelf();
         }
-    }
-
-    public void setPauseErrorData(ArrayList list){
-        HashMap map = Utilities.changeArrayListToHashMap(list);
-        if(map == null || map.isEmpty())
-            return;
-        pauseErrorData.clear();
-        pauseErrorData.putAll(map);
-        if(pauseErrorlistener != null)
-            pauseErrorlistener.onGettingDownloads(list);
-
     }
 
     public BackgroundDownloaderService() {}
@@ -157,12 +103,21 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         manager = Manager.getInstance(Runtime.getRuntime().availableProcessors());
         manager.bind(this);
         runningData = new HashMap();
-        pauseErrorData = new HashMap();
-        successDownloadList = new ArrayList();
+
+    }
+
+    private void suddenPauseDownload(){
+        if(runningData != null && !runningData.isEmpty()){
+            for(Object key:runningData.keySet()){
+                DownloadInformation information = (DownloadInformation) runningData.get(key);
+                pauseDownload(information.getId());
+            }
+        }
     }
 
     private void release(){
-        Utilities.uploadData(pauseErrorData,successDownloadList,getApplicationContext());
+        suddenPauseDownload();
+    //    Utilities.uploadData(pauseErrorData,successDownloadList,getApplicationContext());
         clearDownloadsData();
         if(manager != null) {
             manager.unbind();
@@ -174,8 +129,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     private void clearDownloadsData(){
         if(runningData != null)
             runningData.clear();
-        if(pauseErrorData != null)
-            pauseErrorData.clear();
     }
 
     @Override
@@ -199,8 +152,9 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Bundle bundle = intent.getExtras();
-        if(bundle != null)
-            startDownload(bundle.getString(Utilities.DOWNLOAD_FILENAME),bundle.getString(Utilities.DOWNLOAD_URL),bundle.getString(Utilities.SAVE_DOWNLOAD_URI),0,0);
+        if(bundle != null) {
+            startDownload(bundle.getString(Utilities.DOWNLOAD_FILENAME), bundle.getString(Utilities.DOWNLOAD_URL), bundle.getString(Utilities.SAVE_DOWNLOAD_URI), bundle.getLong(Utilities.DOWNLOAD_FILE_SIZE), bundle.getLong(Utilities.DOWNLOAD_DOWNLOADED_SIZE));
+        }
         return START_NOT_STICKY;
     }
 
@@ -230,6 +184,15 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         Log.e(TAG,"OnError "+id+" "+errorCode+" "+errorMsg);
     }
 
+    private void uploadDataToSuccessDb(DownloadInformation information){
+        ContentValues value = new ContentValues();
+        value.put(DownloaderContract.Success.TITLE,information.getTitle());
+        value.put(DownloaderContract.Success.DOWNLOAD_URL,information.getDownloadUrl());
+        value.put(DownloaderContract.Success.SAVE_URI,information.getSavePath());
+        value.put(DownloaderContract.Success.FILESIZE,information.getFileSize());
+        getContentResolver().insert(DownloaderContract.Success.CONTENT_URI,value);
+    }
+
     @Override
     public void onSuccess(Request request) {
         if(runninglistener != null)
@@ -238,13 +201,22 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             updateInformation(request.getId(),100,request.getFileSize(),request.getFileSize());
             DownloadInformation information = (DownloadInformation)runningData.get(request.getId());
             information.setDownloadStatus(DownloadInformation.SUCCESS_DOWNLOAD);
-            successDownloadList.add(information);
+            uploadDataToSuccessDb(information);
             runningData.remove(request.getId());
-            if(successListener != null)
-                successListener.onSuccess(request);
         }
         isThereAnyRunningDownload();
         Log.e(TAG,"OnSuccess "+request.getId());
+    }
+
+    private void uploadDataToPauseErrorDb(DownloadInformation information){
+        ContentValues value = new ContentValues();
+        value.put(DownloaderContract.PausedError.TITLE,information.getTitle());
+        value.put(DownloaderContract.PausedError.DOWNLOAD_URL,information.getDownloadUrl());
+        value.put(DownloaderContract.PausedError.SAVE_URI,information.getSavePath());
+        value.put(DownloaderContract.PausedError.FILESIZE,information.getFileSize());
+        value.put(DownloaderContract.PausedError.DOWNLOADED_SiZE,information.getDownloadedSize());
+        value.put(DownloaderContract.PausedError.LAST_DOWNLOAD_STATUS,information.getDownloadStatus());
+        getContentResolver().insert(DownloaderContract.PausedError.CONTENT_URI,value);
     }
 
     private void PauseAndErrorMethod(int id,int errorCode,String errorMsg){
@@ -252,7 +224,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             if(runninglistener != null)
                 runninglistener.onError(id,errorCode,errorMsg,null);
 
-            if(pauseErrorData != null){
                 DownloadInformation information = (DownloadInformation) runningData.get(id);
                 if(information != null) {
                     if(errorCode == DownloadCode.DOWNLOAD_INTERRUPT_ERROR)
@@ -260,13 +231,11 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
                     else
                         information.setDownloadStatus(DownloadInformation.CANCEL_DOWNLOAD);
                     //Todo:- Handel if there is other kind of Error happen in here like URL ERROR,FILE NOT FOUND ERROR
-                    DownloadInformation newinfo = new DownloadInformation(information);
 
-                    pauseErrorData.put(id, information);
-                    if (pauseErrorlistener != null)
-                        pauseErrorlistener.onError(id, errorCode, errorMsg, newinfo);
+                    uploadDataToPauseErrorDb(information);
+
                 }
-            }
+
             runningData.remove(id);
         }
 

@@ -2,6 +2,7 @@ package com.example.rdas6313.litedownloader;
 
 
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -37,7 +38,7 @@ import java.util.ArrayList;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class SuccessDownloadFragment extends Fragment implements ButtonListener,CallBackListener {
+public class SuccessDownloadFragment extends Fragment implements ButtonListener,LoaderManager.LoaderCallbacks<Cursor>{
 
 
     private RecyclerView recyclerView;
@@ -46,6 +47,7 @@ public class SuccessDownloadFragment extends Fragment implements ButtonListener,
     private BackgroundDownloaderService service;
     private boolean isAdapterAlreadyLoaded;
     private final String TAG = SuccessDownloadFragment.class.getName();
+    private final int SUCCESS_DOWNLOAD_LOADER_ID = 12;
 
     public SuccessDownloadFragment() {}
 
@@ -76,13 +78,12 @@ public class SuccessDownloadFragment extends Fragment implements ButtonListener,
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 int pos = viewHolder.getAdapterPosition();
                 DownloadInformation information = adapter.getDownloadInformation(pos);
-                if(service != null){
-                    service.removeSuccessfullDownload(pos);
-                    adapter.remove(pos);
-                }
+                adapter.remove(pos);
+                removeSuccessfullDownload(information.getId());
             }
         });
         itemTouchHelper.attachToRecyclerView(recyclerView);
+        getActivity().getSupportLoaderManager().initLoader(SUCCESS_DOWNLOAD_LOADER_ID,null,this);
     }
 
     @Override
@@ -118,30 +119,13 @@ public class SuccessDownloadFragment extends Fragment implements ButtonListener,
         }
     }
 
-    @Override
-    public void onAddDownload(int id, String title, String downlaod_url, String save_Path, long fileSize, long downloadedSize) {}
-
-    @Override
-    public void onProgress(int id, int progress, long downloadedSize, long fileSize) {}
-
-    @Override
-    public void onError(int id, int errorCode, String errorMsg, Object objec) {}
-
-    @Override
-    public void onSuccess(Request request) {
-        DownloadInformation information = new DownloadInformation(request.getFilename(),100,request.getFileSize(),request.getDownloadedSize());
-        information.setDownloadStatus(DownloadInformation.SUCCESS_DOWNLOAD);
-        information.setDownloadUrl(request.getDownloadUrl());
-        information.setSavePath(request.getSaveUri());
-        information.setId(request.getId());
-        adapter.add(information);
+    private void removeSuccessfullDownload(int id){
+        getContext().getContentResolver().delete(ContentUris.withAppendedId(DownloaderContract.Success.CONTENT_URI,id),null,null);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if(service != null)
-            service.setSuccessDownloadListener(null);
         getContext().unbindService(connection);
     }
 
@@ -152,29 +136,12 @@ public class SuccessDownloadFragment extends Fragment implements ButtonListener,
         getContext().bindService(intent,connection,0);
     }
 
-    @Override
-    public void onGettingDownloads(ArrayList list) {
-        if(!isAdapterAlreadyLoaded){
-            adapter.clearData();
-            adapter.add(list);
-            isAdapterAlreadyLoaded = true;
-        }
-    }
 
     private ServiceConnection connection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder binder) {
             BackgroundDownloaderService.MyBinder myBinder = (BackgroundDownloaderService.MyBinder)binder;
             service = myBinder.getService();
-            service.setSuccessDownloadListener(SuccessDownloadFragment.this);
-            if(!isAdapterAlreadyLoaded){
-                ArrayList<DownloadInformation> list = (ArrayList<DownloadInformation>) service.getSuccessDownloadList();
-                if(list != null && list.size() > 0){
-                    adapter.clearData();
-                    adapter.add(list);
-                    isAdapterAlreadyLoaded = true;
-                }
-            }
         }
 
         @Override
@@ -184,4 +151,22 @@ public class SuccessDownloadFragment extends Fragment implements ButtonListener,
     };
 
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getContext(),DownloaderContract.Success.CONTENT_URI,null,null,null,null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.e(TAG,"LOAD FINISED");
+        ArrayList list = Utilities.changeCursorToArrayListForSuccess(data);
+        adapter.clearData();
+        adapter.add(list);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        Log.e(TAG,"LOADER RESET");
+        adapter.clearData();
+    }
 }

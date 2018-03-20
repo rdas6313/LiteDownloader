@@ -80,6 +80,10 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
 
     private boolean checkDataIfError(){
         boolean isThereError = false;
+        if(!Utilities.checkIfInternetAvailable(this)){
+            Toast.makeText(this,getString(R.string.checkInternet),Toast.LENGTH_SHORT).show();
+            return true;
+        }
         String url = urlView.getText().toString();
         String filename = filenameView.getText().toString();
         String location = dir.getText().toString();
@@ -113,6 +117,8 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
             bundle.putString(Utilities.DOWNLOAD_FILENAME,filename);
             bundle.putString(Utilities.DOWNLOAD_URL,url);
             bundle.putString(Utilities.SAVE_DOWNLOAD_URI,save_uri);
+            bundle.putLong(Utilities.DOWNLOAD_FILE_SIZE,0);
+            bundle.putLong(Utilities.DOWNLOAD_DOWNLOADED_SIZE,0);
             Intent intent = new Intent(this, BackgroundDownloaderService.class);
             intent.putExtras(bundle);
             startService(intent);

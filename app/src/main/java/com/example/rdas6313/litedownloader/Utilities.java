@@ -28,6 +28,10 @@ public final class Utilities {
     public final static String DOWNLOAD_URL = "url";
     public final static String SAVE_DOWNLOAD_URI = "uri";
     public final static String DOWNLOAD_FILENAME = "filename";
+    public final static String DOWNLOAD_FILE_SIZE = "filesize";
+    public final static String DOWNLOAD_DOWNLOADED_SIZE = "downloaded_size";
+    public final static String SHOULD_REMOVE_PAUSE_ERROR_DOWNLOAD = "isItFirstTimeDownload";
+    public final static String DOWNLOAD_ID = "downlaod_id";
 
     public final static String UPLOAD_PAUSE_ERROR_KEY = "key_pause_error";
     public final static String UPLOAD_SUCCESS_KEY = "success_key";
@@ -68,7 +72,9 @@ public final class Utilities {
         if(cursor == null)
             return null;
         ArrayList list = new ArrayList();
-        while(cursor.moveToNext()){
+        if(!cursor.moveToFirst())
+            return null;
+        do{
             String title = cursor.getString(cursor.getColumnIndex(DownloaderContract.Success.TITLE));
             String url = cursor.getString(cursor.getColumnIndex(DownloaderContract.Success.DOWNLOAD_URL));
             String save_uri = cursor.getString(cursor.getColumnIndex(DownloaderContract.Success.SAVE_URI));
@@ -79,7 +85,7 @@ public final class Utilities {
             information.setSavePath(save_uri);
             information.setDownloadUrl(url);
             list.add(information);
-        }
+        }while(cursor.moveToNext());
         return list;
     }
 
@@ -88,13 +94,16 @@ public final class Utilities {
             return null;
         ArrayList<DownloadInformation>list = new ArrayList<>();
         int key = -1;
-        while(cursor.moveToNext()){
+        if(!cursor.moveToFirst())
+            return null;
+        do{
             String title = cursor.getString(cursor.getColumnIndex(DownloaderContract.PausedError.TITLE));
             String url = cursor.getString(cursor.getColumnIndex(DownloaderContract.PausedError.DOWNLOAD_URL));
             String save_uri = cursor.getString(cursor.getColumnIndex(DownloaderContract.PausedError.SAVE_URI));
             long filesize = Long.parseLong(cursor.getString(cursor.getColumnIndex(DownloaderContract.PausedError.FILESIZE)));
             long downloadedSize = Long.parseLong(cursor.getString(cursor.getColumnIndex(DownloaderContract.PausedError.DOWNLOADED_SiZE)));
             int status = cursor.getInt(cursor.getColumnIndex(DownloaderContract.PausedError.LAST_DOWNLOAD_STATUS));
+            int id = (int)cursor.getLong(cursor.getColumnIndex(DownloaderContract.PausedError._ID));
             int progress = 0;
             if(filesize > 0)
                 progress = (int)((downloadedSize*100)/filesize);
@@ -103,11 +112,11 @@ public final class Utilities {
 
             DownloadInformation information = new DownloadInformation(title,progress,filesize,downloadedSize);
             information.setDownloadUrl(url);
-            information.setId(key--);
+            information.setId(id);
             information.setDownloadStatus(status);
             information.setSavePath(save_uri);
             list.add(information);
-        }
+        }while(cursor.moveToNext());
         return list;
     }
     public static HashMap changeArrayListToHashMap(ArrayList list){

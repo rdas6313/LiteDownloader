@@ -2,12 +2,17 @@ package com.example.rdas6313.litedownloader;
 
 
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,10 +22,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.example.litedownloaderapi.Request;
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 import com.example.rdas6313.litedownloader.backgroundDownload.CallBackListener;
+import com.example.rdas6313.litedownloader.data.DownloaderContract;
 
 import java.util.ArrayList;
 
@@ -28,7 +35,7 @@ import java.util.ArrayList;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class PauseErrorFragment extends Fragment implements ButtonListener,CallBackListener{
+public class PauseErrorFragment extends Fragment implements ButtonListener,LoaderManager.LoaderCallbacks<Cursor>{
 
     private final static String TAG = PauseErrorFragment.class.getName();
     private RecyclerView recyclerView;
@@ -36,6 +43,7 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
     private Adapter adapter;
     private BackgroundDownloaderService service;
     private boolean isAdapterAlreadyLoaded;
+    private final int PAUSE_ERROR_LOADER_ID = 1;
 
     public PauseErrorFragment() {}
 
@@ -69,15 +77,12 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
                 int pos = viewHolder.getAdapterPosition();
                 int downlaod_id = adapter.getDownloadInformation(pos).getId();
                 adapter.remove(pos);
-                /*if(listener != null) {
-                    listener.removePauseErrorDownload(downlaod_id);
-
-                }*/
-                if(service != null)
-                    service.removePausedErrorDownload(downlaod_id);
+                removePausedErrorDownload(downlaod_id);
             }
         });
         touchHelper.attachToRecyclerView(recyclerView);
+
+        getActivity().getSupportLoaderManager().initLoader(PAUSE_ERROR_LOADER_ID,null,this);
     }
 
 
@@ -90,36 +95,35 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
             case DownloadInformation.CANCEL_DOWNLOAD:
             case DownloadInformation.PAUSE_DOWNLOAD:
                 //listener.onresumeDownload(information.getId(),status,information.getDownloadUrl(),information.getSavePath(),information.getTitle(),information.getFileSize(),information.getDownloadedSize());//sending download id here
-                if(service != null){
-                    boolean isStarted = service.startDownload(information.getTitle(),information.getDownloadUrl(),information.getSavePath(),information.getFileSize(),information.getDownloadedSize());
-                    if(isStarted){
-                        //information.setDownloadStatus(DownloadInformation.RESUME_DOWNLOAD);
-                        service.removePausedErrorDownload(information.getId());
-                        adapter.remove(id);
-                    }
-
+                if(!Utilities.checkIfInternetAvailable(getContext())) {
+                    Toast.makeText(getContext(), R.string.checkInternet, Toast.LENGTH_SHORT).show();
+                    break;
                 }
-
+                if(service == null){
+                    Bundle bundle = new Bundle();
+                    bundle.putString(Utilities.DOWNLOAD_FILENAME,information.getTitle());
+                    bundle.putString(Utilities.SAVE_DOWNLOAD_URI,information.getSavePath());
+                    bundle.putString(Utilities.DOWNLOAD_URL,information.getDownloadUrl());
+                    bundle.putLong(Utilities.DOWNLOAD_FILE_SIZE,information.getFileSize());
+                    bundle.putLong(Utilities.DOWNLOAD_DOWNLOADED_SIZE,information.getDownloadedSize());
+                    bundle.putBoolean(Utilities.SHOULD_REMOVE_PAUSE_ERROR_DOWNLOAD,true);
+                    bundle.putInt(Utilities.DOWNLOAD_ID,information.getId());
+                    Intent intent = new Intent(getContext(),BackgroundDownloaderService.class);
+                    intent.putExtras(bundle);
+                    getContext().startService(intent);
+                }else{
+                    service.startDownload(information.getTitle(),information.getDownloadUrl(),information.getSavePath(),information.getFileSize(),information.getDownloadedSize());
+                }
+                removePausedErrorDownload(information.getId());
+                adapter.remove(id);
                 break;
         }
     }
 
-
-    @Override
-    public void onAddDownload(int id, String title, String downlaod_url, String save_Path, long fileSize, long downloadedSize) {
+    private void removePausedErrorDownload(int id){
+        getContext().getContentResolver().delete(ContentUris.withAppendedId(DownloaderContract.PausedError.CONTENT_URI,id),null,null);
     }
 
-    @Override
-    public void onProgress(int id, int progress, long downloadedSize, long fileSize) {}
-
-    @Override
-    public void onError(int id, int errorCode, String errorMsg, Object object) {
-        DownloadInformation information = (DownloadInformation) object;
-        if(information != null) {
-            adapter.add(information);
-        }
-        Log.e(TAG,"onError Called "+id);
-    }
 
 
     @Override
@@ -127,29 +131,14 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
         super.onResume();
         Intent intent = new Intent(getContext(),BackgroundDownloaderService.class);
         getContext().bindService(intent,connection,0);
-
-
     }
 
 
     @Override
     public void onPause() {
         super.onPause();
-        if(service != null)
-            service.setPauseErrorlistener(null);
+        service = null;
         getContext().unbindService(connection);
-    }
-
-    @Override
-    public void onSuccess(Request request) {}
-
-    @Override
-    public void onGettingDownloads(ArrayList list) {
-        if(!isAdapterAlreadyLoaded){
-            adapter.clearData();
-            adapter.add(list);
-            isAdapterAlreadyLoaded = true;
-        }
     }
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -157,15 +146,6 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
         public void onServiceConnected(ComponentName name, IBinder iBinder) {
             BackgroundDownloaderService.MyBinder myBinder = (BackgroundDownloaderService.MyBinder)iBinder;
             service = myBinder.getService();
-            service.setPauseErrorlistener(PauseErrorFragment.this);
-            if(!isAdapterAlreadyLoaded){
-                ArrayList list = service.getPausedErrorDownloads();
-                if(list != null && list.size() > 0){
-                    adapter.clearData();
-                    adapter.add(list);
-                    isAdapterAlreadyLoaded = true;
-                }
-            }
         }
 
         @Override
@@ -173,4 +153,23 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,CallB
             service = null;
         }
     };
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getContext(), DownloaderContract.PausedError.CONTENT_URI,null,null,null,null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        ArrayList list = Utilities.ChangeCursorToArrayListForPauseError(data);
+        if(list !=null) {
+            adapter.clearData();
+            adapter.add(list);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        adapter.clearData();
+    }
 }

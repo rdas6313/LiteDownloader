@@ -9,16 +9,20 @@
     android:background="@android:color/white"
     android:paddingBottom="8dp"
     xmlns:tools="http://schemas.android.com/tools">
+
     <TextView
         android:id="@+id/downloadTitle"
-        android:textColor="@android:color/black"
+        android:maxWidth="250dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="Pal By Arijit Singh"
+        android:layout_marginTop="16dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@android:color/black"
         android:textSize="18sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="16dp" />
+        tools:text="Pal By Arijit Singh and some another one and the one is no one" />
     <ProgressBar
         android:progress="75"
         android:id="@+id/downloadProgressBar"

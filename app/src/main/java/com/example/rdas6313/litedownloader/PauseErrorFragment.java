@@ -112,7 +112,7 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,Loade
                     intent.putExtras(bundle);
                     getContext().startService(intent);
                 }else{
-                    service.startDownload(information.getTitle(),information.getDownloadUrl(),information.getSavePath(),information.getFileSize(),information.getDownloadedSize());
+                    service.startDownload(information.getTitle(),information.getDownloadUrl(),information.getSavePath(),information.getFileSize(),information.getDownloadedSize(),false);
                 }
                 removePausedErrorDownload(information.getId());
                 adapter.remove(id);
@@ -162,7 +162,7 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,Loade
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         ArrayList list = Utilities.ChangeCursorToArrayListForPauseError(data);
-        if(list !=null) {
+        if(list !=null && list.size()>0) {
             adapter.clearData();
             adapter.add(list);
         }

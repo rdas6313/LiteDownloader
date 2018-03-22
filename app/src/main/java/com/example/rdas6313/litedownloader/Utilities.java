@@ -37,11 +37,11 @@ public final class Utilities {
     public final static String UPLOAD_PAUSE_ERROR_KEY = "key_pause_error";
     public final static String UPLOAD_SUCCESS_KEY = "success_key";
 
-    public static void changeServiceAliveValue(boolean value, Application application){
+    public static void changeServiceRunningValue(boolean value, Application application){
         App app = (App)application;
         app.isServiceAlive = value;
     }
-    public static boolean isServiceAlive(Application application){
+    public static boolean hasThereAnyRunnningTask(Application application){
         App app = (App)application;
         return app.isServiceAlive;
     }

@@ -195,15 +195,27 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
         getContext().unbindService(connection);
     }
 
-    @Override
+    /*@Override
     public void onStart() {
         super.onStart();
+        bindToService();
+    }*/
+
+    /*@Override
+    public void onStop() {
+        super.onStop();
+        unBindToService();
+    }*/
+
+    @Override
+    public void onResume() {
+        super.onResume();
         bindToService();
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onPause() {
+        super.onPause();
         unBindToService();
     }
 

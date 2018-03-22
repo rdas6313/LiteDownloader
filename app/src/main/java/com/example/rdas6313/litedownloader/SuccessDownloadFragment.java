@@ -160,8 +160,10 @@ public class SuccessDownloadFragment extends Fragment implements ButtonListener,
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         Log.e(TAG,"LOAD FINISED");
         ArrayList list = Utilities.changeCursorToArrayListForSuccess(data);
-        adapter.clearData();
-        adapter.add(list);
+        if(list != null && list.size()>0){
+            adapter.clearData();
+            adapter.add(list);
+        }
     }
 
     @Override

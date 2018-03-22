@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         checkPermissions();
-
+        Utilities.changeActivityAliveValue(true,getApplication());
         activeDownloadFragment = new ActiveDownloadFragment();
         pauseErrorFragment = new PauseErrorFragment();
         successDownloadFragment = new SuccessDownloadFragment();
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         pager = (ViewPager)findViewById(R.id.view_pager);
         pagerAdapter = new PagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
-        pager.addOnPageChangeListener(this);
+        //pager.addOnPageChangeListener(this);
 
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.setupWithViewPager(pager);
@@ -102,6 +102,16 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                 }
 
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        Utilities.changeActivityAliveValue(false,getApplication());
+        if(!Utilities.hasThereAnyRunnningTask(getApplication())){
+            Intent intent = new Intent(this,BackgroundDownloaderService.class);
+            stopService(intent);
+        }
+        super.onDestroy();
     }
 
     @Override

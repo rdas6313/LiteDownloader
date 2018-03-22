@@ -1,8 +1,10 @@
 package com.example.rdas6313.litedownloader.backgroundDownload;
 
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.Service;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
@@ -23,6 +25,8 @@ import com.example.rdas6313.litedownloader.data.DownloaderContract;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 public class BackgroundDownloaderService extends Service implements DownloadEventListener{
 
@@ -82,10 +86,9 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         runningData.put(id,information);
         if(runninglistener != null)
             runninglistener.onAddDownload(id,filename,download_url,saveUri,filesize,downloadedSize);
-       /* NotificationCompat.Builder builder = NotificationUtils.makeNotification(getApplicationContext(),filename,"Download in progress",NOTIFICATION_ICON);
+        NotificationCompat.Builder builder = NotificationUtils.makeNotification(id,getApplicationContext(),filename,"Download in progress",NOTIFICATION_ICON);
         nlist[id] = builder;
         //Todo :- change ongoing for foreground notification
-        NotificationUtils.applyNotification(getApplicationContext(),id,builder);*/
         Utilities.changeServiceRunningValue(true,getApplication());
         return id;
     }
@@ -98,9 +101,14 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             manager.cancel(id);
     }
 
-    private void isThereAnyRunningDownload(){
+    private void isThereAnyRunningDownload(String content,int id){
+        if(nlist[id] != null) {
+            nlist[id].setOngoing(false).setContentText(content);
+            NotificationManagerCompat managerCompat = NotificationManagerCompat.from(getApplicationContext());
+            managerCompat.notify(id,nlist[id].build());
+            nlist[id] = null;
+        }
         if(runningData != null && runningData.isEmpty()) {
-            //stopforeground
             Utilities.changeServiceRunningValue(false,getApplication());
             if(!Utilities.isActivityAlive(getApplication())){
                 stopSelf();
@@ -116,10 +124,10 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         manager = Manager.getInstance(Runtime.getRuntime().availableProcessors());
         manager.bind(this);
         runningData = new HashMap();
-        /*for(int i=0;i<MAX;i++){
+        for(int i=0;i<MAX;i++){
             nlist[i] = null;
-        }*/
-
+        }
+        NotificationUtils.initNotificationManager(getApplicationContext());
     }
 
     private void suddenPauseDownload(){
@@ -188,9 +196,9 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         updateInformation(id,progress,downloadedSize,fileSize);
         if(runninglistener != null)
             runninglistener.onProgress(id,progress,downloadedSize,fileSize);
-        /*if(nlist[id] != null){
+        if(nlist[id] != null){
             NotificationUtils.changeProgress(progress,nlist[id],id);
-        }*/
+        }
     }
 
     @Override
@@ -213,6 +221,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     @Override
     public void onSuccess(Request request) {
+        String content = "";
         if(runninglistener != null)
             runninglistener.onSuccess(request);
         if(runningData.containsKey(request.getId())){
@@ -221,15 +230,12 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             information.setDownloadStatus(DownloadInformation.SUCCESS_DOWNLOAD);
             uploadDataToSuccessDb(information);
             runningData.remove(request.getId());
-            /*if(nlist[request.getId()] != null){
-                String content = "Download Successfully";
-                NotificationUtils.changeContent(content,nlist[request.getId()],request.getId());
-                nlist[request.getId()] = null;
-                Log.e(TAG,"Changed Content in OnSuccess Download");
-            }*/
+            if(nlist[request.getId()] != null){
+                content = "Download Successfully";
+            }
         }
 
-        isThereAnyRunningDownload();
+        isThereAnyRunningDownload(content,request.getId());
         Log.e(TAG,"OnSuccess "+request.getId());
     }
 
@@ -245,13 +251,13 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     }
 
     private void PauseAndErrorMethod(int id,int errorCode,String errorMsg){
+        String content = "";
         if(runningData.containsKey(id)){
             if(runninglistener != null)
                 runninglistener.onError(id,errorCode,errorMsg,null);
 
             DownloadInformation information = (DownloadInformation) runningData.get(id);
             runningData.remove(id);
-            String content = "";
             if(information != null) {
                 if(errorCode == DownloadCode.DOWNLOAD_INTERRUPT_ERROR) {
                     information.setDownloadStatus(DownloadInformation.PAUSE_DOWNLOAD);
@@ -259,16 +265,8 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
                 }
                 else {
                     information.setDownloadStatus(DownloadInformation.CANCEL_DOWNLOAD);
-                    content = "Error Download "+information.getProgress()+"%";
+                    content = "Error Download";
                 }//Todo:- Handel if there is other kind of Error happen in here like URL ERROR,FILE NOT FOUND ERROR
-
-               /* if(nlist[id] != null){
-                    nlist[id].setContentText(content).setOngoing(false);
-                    NotificationManagerCompat managerCompat = NotificationManagerCompat.from(nlist[id].mContext);
-                    Log.e(TAG,"Changed Content in "+content);
-                    managerCompat.notify(id,nlist[id].build());
-                    nlist[id] = null;
-                }*/
 
                 uploadDataToPauseErrorDb(information);
 
@@ -277,7 +275,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
         }
 
-        isThereAnyRunningDownload();
+        isThereAnyRunningDownload(content,id);
     }
 
 

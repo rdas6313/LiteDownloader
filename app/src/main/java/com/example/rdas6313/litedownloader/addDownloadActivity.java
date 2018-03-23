@@ -10,6 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -49,6 +50,7 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
 
     private final int FETCH_DATA_INFO_LOADER_ID = 2012;
     private final String DOWNLOAD_URL = "download_url";
+    private final String BUNDLE_FILE_SIZE = "file_size";
 
     private EditText urlView,filenameView,dir;
     private Button Btn;
@@ -74,6 +76,8 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
         dir = (EditText)findViewById(R.id.save_folder);
         dir.setOnTouchListener(this);
         fileSize_View = (TextView)findViewById(R.id.fileSize);
+        if(savedInstanceState != null && savedInstanceState.containsKey(BUNDLE_FILE_SIZE))
+            fileSize_View.setText(savedInstanceState.getString(BUNDLE_FILE_SIZE));
         Btn = (Button)findViewById(R.id.downloadBtn);
         Btn.setOnClickListener(this);
     }
@@ -289,6 +293,12 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(BUNDLE_FILE_SIZE,fileSize_View.getText().toString());
+    }
+
+    @Override
     public void onLoadFinished(Loader loader, Object data) {
         progressBar.setVisibility(View.GONE);
         fileSize_View.setVisibility(View.VISIBLE);
@@ -296,6 +306,7 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
             fileSize_View.setText(getString(R.string.addDownloadUnableToFetch));
             return;
         }
+    //    Log.e(TAG,"onLoadFinished data "+data);
         long fileSize = (long)data;
         fileSize_View.setText(Utilities.convertSize(fileSize));
         String url = urlView.getText().toString();
@@ -306,6 +317,7 @@ public class addDownloadActivity extends AppCompatActivity implements View.OnCli
     @Override
     public void onLoaderReset(Loader loader) {
         fileSize_View.setText(getString(R.string.unknownSize));
+      //  Log.e(TAG,"Loader Reset");
     }
 
     @Override

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="8dp"
+    android:layout_marginTop="0dp"
+    android:layout_marginBottom="4dp"
+    android:background="@android:color/white"
+    android:paddingBottom="8dp"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <TextView
+        android:id="@+id/downloadTitle"
+        android:maxWidth="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@android:color/black"
+        android:textSize="8sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Pal By Arijit Singh and some another one and the one is no one" />
+    <ProgressBar
+        android:progress="75"
+        android:id="@+id/downloadProgressBar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_marginLeft="0dp"
+        app:layout_constraintLeft_toLeftOf="@+id/downloadTitle"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/downloadTitle"
+        app:layout_constraintRight_toLeftOf="@+id/ButtonView"
+        android:layout_marginRight="32dp"
+        app:layout_constraintHorizontal_bias="0.59" />
+    <TextView
+        android:id="@+id/downloadSizeAndProgress"
+        android:textSize="8sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="10 MB / 15 MB (90%)"
+        app:layout_constraintLeft_toLeftOf="@+id/downloadProgressBar"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@+id/downloadProgressBar" />
+
+
+    <ImageButton
+        android:padding="4dp"
+        android:background="@drawable/round_background"
+        android:id="@+id/ButtonView"
+        android:layout_gravity="center"
+        android:layout_weight="0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_pause_black_24dp"
+        android:layout_marginTop="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/downloadProgressBar"
+        android:layout_marginBottom="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/downloadProgressBar"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="@+id/guideline"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_bias="0.65" />
+
+
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.67" />
+
+</android.support.constraint.ConstraintLayout>

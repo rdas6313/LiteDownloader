@@ -32,17 +32,12 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     private final String TAG = BackgroundDownloaderService.class.getName();
     private HashMap runningData;
-    private HashMap pauseErrorData;
 
     private final MyBinder binder = new MyBinder();
     private CallBackListener runninglistener;
-    private CallBackListener pauseErrorlistener;
     private Manager manager;
 
-    private ArrayList successDownloadList;
-    private CallBackListener successListener;
     private final int NOTIFICATION_ICON = R.mipmap.ic_launcher_round;
-    private int FOREGROUND_ID;
     private final static int MAX = 100;
     private static NotificationCompat.Builder nlist[] = new NotificationCompat.Builder[MAX];
 
@@ -103,9 +98,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     private void isThereAnyRunningDownload(String content,int id){
         if(nlist[id] != null) {
-            nlist[id].setOngoing(false).setContentText(content);
-            NotificationManagerCompat managerCompat = NotificationManagerCompat.from(getApplicationContext());
-            managerCompat.notify(id,nlist[id].build());
+            NotificationUtils.changeContent(content,nlist[id],id);
             nlist[id] = null;
         }
         if(runningData != null && runningData.isEmpty()) {
@@ -141,7 +134,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     private void release(){
         suddenPauseDownload();
-    //    Utilities.uploadData(pauseErrorData,successDownloadList,getApplicationContext());
         clearDownloadsData();
         if(manager != null) {
             manager.unbind();
@@ -231,7 +223,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             uploadDataToSuccessDb(information);
             runningData.remove(request.getId());
             if(nlist[request.getId()] != null){
-                content = "Download Successfully";
+                content = getString(R.string.successfullNotification);
             }
         }
 
@@ -261,11 +253,11 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             if(information != null) {
                 if(errorCode == DownloadCode.DOWNLOAD_INTERRUPT_ERROR) {
                     information.setDownloadStatus(DownloadInformation.PAUSE_DOWNLOAD);
-                    content = "Paused Download "+information.getProgress()+"%";
+                    content = getString(R.string.pauseNotification)+" "+information.getProgress()+"%";
                 }
                 else {
                     information.setDownloadStatus(DownloadInformation.CANCEL_DOWNLOAD);
-                    content = "Error Download";
+                    content = getString(R.string.errorNotification);
                 }//Todo:- Handel if there is other kind of Error happen in here like URL ERROR,FILE NOT FOUND ERROR
 
                 uploadDataToPauseErrorDb(information);

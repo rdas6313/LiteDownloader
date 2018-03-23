@@ -49,10 +49,6 @@
                 android:value=".MainActivity" />
         </activity>
 
-        <service
-            android:name=".backgroundDownload.BackgroundDataUploadingService"
-            android:exported="false"></service>
-        
         <provider
             android:authorities="@string/fileProvider_auth"
             android:name="android.support.v4.content.FileProvider"
@@ -61,6 +57,7 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_path"/>
         </provider>
+
     </application>
 
 </manifest>

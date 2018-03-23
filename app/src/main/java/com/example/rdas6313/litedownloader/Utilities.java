@@ -2,15 +2,12 @@ package com.example.rdas6313.litedownloader;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 
-import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDataUploadingService;
-import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 import com.example.rdas6313.litedownloader.data.DownloaderContract;
 
 import java.io.File;
@@ -34,8 +31,6 @@ public final class Utilities {
     public final static String SHOULD_REMOVE_PAUSE_ERROR_DOWNLOAD = "isItFirstTimeDownload";
     public final static String DOWNLOAD_ID = "downlaod_id";
 
-    public final static String UPLOAD_PAUSE_ERROR_KEY = "key_pause_error";
-    public final static String UPLOAD_SUCCESS_KEY = "success_key";
 
     public static void changeServiceRunningValue(boolean value, Application application){
         App app = (App)application;
@@ -109,8 +104,6 @@ public final class Utilities {
             if(filesize > 0)
                 progress = (int)((downloadedSize*100)/filesize);
 
-         //   Log.e(TAG,title+" "+filesize+" "+progress+" "+status);
-
             DownloadInformation information = new DownloadInformation(title,progress,filesize,downloadedSize);
             information.setDownloadUrl(url);
             information.setId(id);
@@ -130,13 +123,6 @@ public final class Utilities {
             map.put(information.getId(),information);
         }
         return map;
-    }
-    public static void uploadData(HashMap pauseErrorData,ArrayList successData,Context context){
-        ArrayList pauseErrorList = MapToArrayList(pauseErrorData);
-        Intent intent = new Intent(context, BackgroundDataUploadingService.class);
-        intent.putParcelableArrayListExtra(UPLOAD_SUCCESS_KEY,successData);
-        intent.putParcelableArrayListExtra(UPLOAD_PAUSE_ERROR_KEY,pauseErrorList);
-        context.startService(intent);
     }
 
     public static boolean checkIfInternetAvailable(Context context){

@@ -82,7 +82,6 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
         addDownloadBtn.setOnClickListener(this);
-//        listener = (CommunicationListener) getContext();
         ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
@@ -94,8 +93,6 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
                 int pos = viewHolder.getAdapterPosition();
                 int download_id = adapter.getDownloadInformation(pos).getId();
                 adapter.remove(pos);
-                /*if(listener != null)
-                    listener.removeOngoingDownlaod(download_id);*/
                 if(service != null){
                     service.removeRunningDownload(download_id);
                 }
@@ -195,17 +192,6 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
         getContext().unbindService(connection);
     }
 
-    /*@Override
-    public void onStart() {
-        super.onStart();
-        bindToService();
-    }*/
-
-    /*@Override
-    public void onStop() {
-        super.onStop();
-        unBindToService();
-    }*/
 
     @Override
     public void onResume() {

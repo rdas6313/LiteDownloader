@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:layout_gravity="center"
+    android:id="@+id/layout_upper"
+    android:background="@drawable/add_download_gradient_background">
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="1dp"
+        android:background="@drawable/add_download_inner_layout_background"
+        android:elevation="4dp"
+        android:orientation="vertical"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintRight_creator="1">
+
+        <EditText
+            android:drawableRight="@drawable/ic_content_paste_black_24dp"
+            android:background="@drawable/edit_text_background"
+            android:id="@+id/urlView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/EdiText_Style"
+            android:layout_marginTop="16dp"
+            android:hint="@string/enter_url_hint"
+            android:padding="12dp" />
+
+        <EditText
+            android:drawableRight="@drawable/ic_folder_black_24dp"
+            android:background="@drawable/edit_text_background"
+            android:id="@+id/save_folder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/EdiText_Style"
+            android:layout_marginTop="8dp"
+            android:hint="@string/save_location_hint"
+            android:padding="12dp"/>
+
+        <EditText
+            android:background="@drawable/edit_text_background"
+            android:id="@+id/file_name_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/EdiText_Style"
+            android:layout_marginTop="8dp"
+            android:hint="@string/file_name_hint"
+            android:padding="12dp" />
+
+        <TextView
+            android:id="@+id/fileSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="8dp"
+            android:text="Unknown Size"
+            android:textColor="@android:color/black"
+            android:textSize="18sp" />
+        <ProgressBar
+            android:visibility="gone"
+            android:id="@+id/loadProgressBar"
+            android:layout_margin="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+        <Button
+            android:id="@+id/downloadBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/download_btn_background"
+            android:text="Download"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/guideline2"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="24dp" />
+
+
+</android.support.constraint.ConstraintLayout>
+

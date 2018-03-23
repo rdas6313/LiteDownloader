@@ -32,7 +32,7 @@ import com.example.rdas6313.litedownloader.data.DownloaderContract;
 import java.util.ArrayList;
 
 
-public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener{
+public class MainActivity extends AppCompatActivity{
 
     private final String TAG = MainActivity.class.getName();
 
@@ -44,13 +44,6 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     private final String PAUSE_ERROR_FRAG = "pause_error_fagment";
     private PauseErrorFragment pauseErrorFragment;
 
-    private ArrayList<DownloadInformation> successList;
-    private ArrayList<DownloadInformation> pauseErrorList;
-    private boolean alreadySentDataToServiceForPauseError;
-    private boolean alreadySentDataToServiceForSuccess;
-
-    private final int PAUSE_ERROR_LOADER_ID = 1;
-    private final int SUCCESS_LOADER_ID = 2;
 
     private ViewPager pager;
     private PagerAdapter pagerAdapter;
@@ -73,10 +66,11 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         pager = (ViewPager)findViewById(R.id.view_pager);
         pagerAdapter = new PagerAdapter(getSupportFragmentManager());
         pager.setAdapter(pagerAdapter);
-        //pager.addOnPageChangeListener(this);
 
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.setupWithViewPager(pager);
+
+        //throw new RuntimeException("Force Crash");
     }
 
     private void checkPermissions(){
@@ -114,32 +108,6 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         super.onDestroy();
     }
 
-    @Override
-    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-    }
-
-    @Override
-    public void onPageSelected(int position) {
-        switch (position){
-            case 0:
-                if(activeDownloadFragment != null){
-                    activeDownloadFragment.bindToService();
-                }
-                break;
-            case 1:
-                if(activeDownloadFragment != null){
-                    activeDownloadFragment.unBindToService();
-                }
-            case 2:
-                break;
-        }
-    }
-
-    @Override
-    public void onPageScrollStateChanged(int state) {
-
-    }
 
     private class PagerAdapter extends FragmentStatePagerAdapter{
 

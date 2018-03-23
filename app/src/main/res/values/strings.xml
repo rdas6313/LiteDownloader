@@ -18,4 +18,7 @@
     <string name="unableToConnectError">Unable To Connect ! Response Error</string>
     <string name="emptyFieldError">This Field Can\'t be empty</string>
     <string name="selectDirError">Select a Directory</string>
+    <string name="successfullNotification">"Download Successfully"</string>
+    <string name="pauseNotification">Paused Download</string>
+    <string name="errorNotification">Error Download</string>
 </resources>

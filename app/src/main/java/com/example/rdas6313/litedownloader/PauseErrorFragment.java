@@ -64,8 +64,6 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,Loade
         adapter = new Adapter(getContext(),this);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
-       // recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),DividerItemDecoration.VERTICAL));
-//        listener = (CommunicationListener) getContext();
         ItemTouchHelper touchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
@@ -94,7 +92,6 @@ public class PauseErrorFragment extends Fragment implements ButtonListener,Loade
         switch (status){
             case DownloadInformation.CANCEL_DOWNLOAD:
             case DownloadInformation.PAUSE_DOWNLOAD:
-                //listener.onresumeDownload(information.getId(),status,information.getDownloadUrl(),information.getSavePath(),information.getTitle(),information.getFileSize(),information.getDownloadedSize());//sending download id here
                 if(!Utilities.checkIfInternetAvailable(getContext())) {
                     Toast.makeText(getContext(), R.string.checkInternet, Toast.LENGTH_SHORT).show();
                     break;

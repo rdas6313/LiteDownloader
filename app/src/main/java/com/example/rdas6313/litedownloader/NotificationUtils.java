@@ -26,12 +26,13 @@ public class NotificationUtils {
     }
     public static void changeProgress(int progress,NotificationCompat.Builder builder,int id){
         builder.setProgress(100,progress,false)
-        .setContentText("Downloading "+progress+"%");
+        .setContentText(progress+"%");
         managerCompat.notify(id,builder.build());
     }
     public static void changeContent(String content,NotificationCompat.Builder builder,int id){
         builder.setContentText(content)
                 .setOngoing(false);
+        Log.e(TAG,"Changing content to "+content+" for id "+id);
         managerCompat.notify(id,builder.build());
     }
 }

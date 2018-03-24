@@ -69,6 +69,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
 
     public int startDownload(String filename,String download_url,String saveUri,long filesize,long downloadedSize,boolean isFirstDownload){
         int progress = 0;
+        boolean shouldStartForeground = false;
         if(filesize>0)
             progress = (int)((downloadedSize*100)/filesize);
         DownloadInformation information = new DownloadInformation(filename,progress,filesize,downloadedSize);
@@ -78,12 +79,16 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         Request request = new Request(filename,download_url,saveUri);
         int id = manager.push(request);
         information.setId(id);
+        if(runningData != null && runningData.isEmpty())
+            shouldStartForeground = true;
         runningData.put(id,information);
         if(runninglistener != null)
             runninglistener.onAddDownload(id,filename,download_url,saveUri,filesize,downloadedSize);
         NotificationCompat.Builder builder = NotificationUtils.makeNotification(id,getApplicationContext(),filename,"Download in progress",NOTIFICATION_ICON);
         nlist[id] = builder;
-        //Todo :- change ongoing for foreground notification
+        if(shouldStartForeground){
+            startForeground(id,builder.build());
+        }
         Utilities.changeServiceRunningValue(true,getApplication());
         return id;
     }
@@ -102,6 +107,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             nlist[id] = null;
         }
         if(runningData != null && runningData.isEmpty()) {
+            stopForeground(false);
             Utilities.changeServiceRunningValue(false,getApplication());
             if(!Utilities.isActivityAlive(getApplication())){
                 stopSelf();

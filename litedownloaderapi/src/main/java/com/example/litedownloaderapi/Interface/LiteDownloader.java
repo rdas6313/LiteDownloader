@@ -5,6 +5,14 @@ package com.example.litedownloaderapi.Interface;
  */
 
 public interface LiteDownloader {
+
+    int EMPTY_URL_ERROR = 1111;
+    int MALFORMED_URL_ERROR = 1112;
+    int IO_ERROR = 1113;
+    int RESPONSE_ERROR = 1114;
+    int PAUSED_ERROR = 1115;
+    int FILE_NOT_FOUND_ERROR = 1116;
+
     /*
      * Necessary features for LiteDownloaderApi
      */
@@ -13,5 +21,6 @@ public interface LiteDownloader {
     public void resume(int id);
     public void cancel(int id);
     public void cancelAll();
+    public void setCallbackListener(LiteDownloadListener listener);
 
 }

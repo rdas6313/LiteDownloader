@@ -1,5 +1,6 @@
 package com.example.litedownloaderapi;
 
+import com.example.litedownloaderapi.Interface.LiteDownloadListener;
 import com.example.litedownloaderapi.Interface.LiteDownloader;
 import com.example.litedownloaderapi.Interface.Request;
 
@@ -17,12 +18,14 @@ public final class TaskManager implements LiteDownloader {
     private BlockingQueue<DownloadRequest>taskList;
     private ArrayList<DownloadRequest>searchList;
     private Task[] tasks;
+    private CallBack callBack;
 
     private TaskManager(){
         taskList = new LinkedBlockingQueue<>();
         searchList = new ArrayList<>();
         int thread_num = Runtime.getRuntime().availableProcessors();
         tasks = new Task[thread_num];
+        callBack = new CallBack();
         initTask(thread_num);
     }
 
@@ -34,7 +37,7 @@ public final class TaskManager implements LiteDownloader {
 
     private void initTask(int number){
         for(int i=0;i<number;i++){
-            Task task = new Task(taskList);
+            Task task = new Task(taskList,callBack);
             tasks[i] = task;
             task.start();
         }
@@ -69,5 +72,11 @@ public final class TaskManager implements LiteDownloader {
 
     }
 
+    @Override
+    public void setCallbackListener(LiteDownloadListener listener) {
+        if(callBack != null){
+            callBack.setCallback(listener);
+        }
+    }
 
 }

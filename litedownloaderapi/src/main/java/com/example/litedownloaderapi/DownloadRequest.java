@@ -26,7 +26,7 @@ public class DownloadRequest implements Request {
     private int download_state,id;
     private long filesize,downloaded_Size;
 
-    public DownloadRequest(){
+    private DownloadRequest(){
         download_url = null;
         save_dir = null;
         filename = null;
@@ -35,6 +35,10 @@ public class DownloadRequest implements Request {
         id = -1;
         filesize = 0;
         downloaded_Size = 0;
+    }
+
+    public static DownloadRequest getRequest(){
+        return new DownloadRequest();
     }
 
     public void setId(int id){

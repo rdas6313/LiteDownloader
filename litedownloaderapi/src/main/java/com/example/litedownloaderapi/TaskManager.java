@@ -76,6 +76,13 @@ public final class TaskManager implements LiteDownloader {
 
     @Override
     public int add(Request request) {
+        if(request != null && taskList != null && searchList != null){
+            DownloadRequest req = (DownloadRequest) request;
+            req.setId(Id++);
+            taskList.add(req);
+            searchList.add(req);
+            return req.getId();
+        }
         return -1;
     }
 

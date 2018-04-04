@@ -93,7 +93,16 @@ public final class TaskManager implements LiteDownloader {
 
     @Override
     public void cancelAll() {
-
+        if(searchList != null){
+            for(int i=searchList.size()-1;i>=0;i--){
+                DownloadRequest request = (DownloadRequest) searchList.get(i);
+                request.setDownloadCancel(true);
+                searchList.remove(i);
+            }
+            if(taskList != null){
+                taskList.clear();
+            }
+        }
     }
 
     @Override

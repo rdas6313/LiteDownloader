@@ -73,4 +73,9 @@ public class CallBack {
             }
         });
     }
+
+    public void clearCallBack(){
+        executor = null;
+        listener = null;
+    }
 }

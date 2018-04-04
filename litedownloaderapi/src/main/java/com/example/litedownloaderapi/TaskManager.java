@@ -14,6 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public final class TaskManager implements LiteDownloader {
 
+    private int Id;
     private static TaskManager taskManager;
     private BlockingQueue<DownloadRequest>taskList;
     private ArrayList<DownloadRequest>searchList;
@@ -27,6 +28,7 @@ public final class TaskManager implements LiteDownloader {
         tasks = new Task[thread_num];
         callBack = new CallBack();
         initTask(thread_num);
+        Id = 1;
     }
 
     public static TaskManager getManager(){
@@ -56,6 +58,7 @@ public final class TaskManager implements LiteDownloader {
         }
         if(callBack != null){
             callBack.setCallback(null);
+            callBack.clearCallBack();
             callBack = null;
         }
         taskManager = null;
@@ -72,23 +75,23 @@ public final class TaskManager implements LiteDownloader {
     }
 
     @Override
-    public void add(Request request) {
-
+    public int add(Request request) {
+        return -1;
     }
 
     @Override
-    public void pause(int id) {
-
+    public boolean pause(int id) {
+        return false;
     }
 
     @Override
-    public void resume(int id) {
-
+    public boolean resume(int id) {
+        return false;
     }
 
     @Override
-    public void cancel(int id) {
-
+    public boolean cancel(int id) {
+        return false;
     }
 
     @Override

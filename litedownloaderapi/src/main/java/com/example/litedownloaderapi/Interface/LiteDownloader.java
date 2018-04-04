@@ -12,14 +12,15 @@ public interface LiteDownloader {
     int RESPONSE_ERROR = 1114;
     int PAUSED_ERROR = 1115;
     int FILE_NOT_FOUND_ERROR = 1116;
+    int ALREADY_DOWNLOADED_ERROR = 1117;
 
     /*
      * Necessary features for LiteDownloaderApi
      */
-    public void add(Request request);
-    public void pause(int id);
-    public void resume(int id);
-    public void cancel(int id);
+    public int add(Request request);
+    public boolean pause(int id);
+    public boolean resume(int id);
+    public boolean cancel(int id);
     public void cancelAll();
     public void setCallbackListener(LiteDownloadListener listener);
     public void clear();

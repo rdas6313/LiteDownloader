@@ -33,6 +33,8 @@ public class Task extends Thread {
     public void run() {
         while(true){
             try{
+                if(queue == null)
+                    return;
                 DownloadRequest request = (DownloadRequest) queue.take();
                 Download(request);
 
@@ -155,19 +157,24 @@ public class Task extends Thread {
         long downloadedSize = request.getDownloadedSize();
         long fileSize = request.getFilesize();
         String savePath = request.getDir()+"/"+request.getFilename();
-        boolean isFileExists = checkIfFileExists(request.getDir(),request.getFilename());
         int req_id = request.getId();
 
+        File file = new File(savePath);
+        boolean isFileExists = file.exists();
         int len = 0;
         int progress = (int)((downloadedSize*100)/fileSize);
         byte[] b = new byte[1024];
         FileOutputStream fileOutputStream = null;
         try{
 
-            if(isFileExists)
-                fileOutputStream = new FileOutputStream(new File(savePath),true);
+            if(isFileExists) {
+                if(fileSize == file.length()){
+                    sendError(req_id,"Already Downloaded Error",LiteDownloader.ALREADY_DOWNLOADED_ERROR);
+                    return;
+                }
+                fileOutputStream = new FileOutputStream(file, true);
+            }
             else {
-                File file = new File(savePath);
                 file.createNewFile();
                 Log.e(TAG,"FILE NAME "+file.getName());
                 fileOutputStream = new FileOutputStream(file);

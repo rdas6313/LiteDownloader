@@ -43,8 +43,32 @@ public final class TaskManager implements LiteDownloader {
         }
     }
 
-    private void clearMemory(){
+    @Override
+    public void clear(){
+        stopTasks();
+        if(taskList != null){
+            taskList.clear();
+            taskList = null;
+        }
+        if(searchList != null){
+            searchList.clear();
+            searchList = null;
+        }
+        if(callBack != null){
+            callBack.setCallback(null);
+            callBack = null;
+        }
+        taskManager = null;
+    }
 
+    private void stopTasks(){
+        if(tasks != null){
+            for(int i=0;i<tasks.length;i++){
+                tasks[i].cancelTask();
+                tasks[i] = null;
+            }
+            tasks = null;
+        }
     }
 
     @Override

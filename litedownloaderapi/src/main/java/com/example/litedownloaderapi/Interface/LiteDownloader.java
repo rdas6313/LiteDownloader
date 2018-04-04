@@ -22,5 +22,6 @@ public interface LiteDownloader {
     public void cancel(int id);
     public void cancelAll();
     public void setCallbackListener(LiteDownloadListener listener);
+    public void clear();
 
 }

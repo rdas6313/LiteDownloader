@@ -7,7 +7,7 @@ import com.example.litedownloaderapi.Interface.Request;
  * Created by rdas6313 on 3/4/18.
  */
 
-public class DownloadRequest implements Request {
+public final class DownloadRequest implements Request {
 
     /*
      * Declared Download Status Constants

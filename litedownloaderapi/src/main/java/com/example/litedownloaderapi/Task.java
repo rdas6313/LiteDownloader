@@ -186,12 +186,10 @@ public class Task extends Thread {
                 }
                 fileOutputStream.write(b,0,len);
                 downloadedSize += len;
-                //Log.e(TAG,"Download Len - "+len);
-                progress = (int)((downloadedSize*100)/fileSize);
-                sendProgress(req_id,progress,fileSize,downloadedSize);
+                request.setDownloadedSize(downloadedSize);
+                sendProgress(request);
             }
             Log.e(TAG,"ACTUAL DOWNLOADED SIZE "+downloadedSize);
-            request.setDownloadedSize(downloadedSize);
             if(progress >= 100) {
                 sendSuccess(req_id);
             }
@@ -228,14 +226,12 @@ public class Task extends Thread {
 
     /**
      * Sending progress to MainThread using Callback
-     * @param id
-     * @param progress
-     * @param filesize
-     * @param downloadedSize
+     * @param request
      */
-    public void sendProgress(int id,int progress,long filesize,long downloadedSize){
-        if(callBack != null){
-            callBack.sendProgress(id,downloadedSize,filesize,progress);
+    public void sendProgress(DownloadRequest request){
+        if(callBack != null && !request.isDownloadCancelled()){
+            int progress = (int)((request.getDownloadedSize()*100)/request.getFilesize());
+            callBack.sendProgress(request.getId(),request.getDownloadedSize(),request.getFilesize(),progress);
         }
     }
 

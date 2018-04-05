@@ -3,6 +3,7 @@ package com.example.litedownloaderapi;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.example.litedownloaderapi.Interface.LiteDownloadListener;
 
@@ -16,6 +17,7 @@ public class CallBack {
 
     private Executor executor;
     private LiteDownloadListener listener;
+    private final static String TAG = CallBack.class.getName();
 
     public CallBack(){
         final Handler handler = new Handler(Looper.getMainLooper());

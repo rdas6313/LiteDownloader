@@ -93,12 +93,15 @@ public final class TaskManager implements LiteDownloader {
      */
     @Override
     public int add(Request request) {
-        if(request != null && taskList != null && searchList != null){
-            DownloadRequest req = (DownloadRequest) request;
-            req.setId(Id++);
-            taskList.add(req);
-            searchList.add(req);
-            return req.getId();
+        if(taskList != null && searchList != null){
+            if(request != null && taskList != null && searchList != null){
+                DownloadRequest req = (DownloadRequest) request;
+                req.setId(Id++);
+                req.setDownloadCancel(false);
+                taskList.add(req);
+                searchList.add(req);
+                return req.getId();
+            }
         }
         return -1;
     }
@@ -110,29 +113,14 @@ public final class TaskManager implements LiteDownloader {
      */
     @Override
     public boolean pause(int id) {
-        for(int i=0;i<searchList.size();i++){
-            DownloadRequest request = (DownloadRequest) searchList.get(i);
-            if(request.getId() == id && !request.isDownloadCancelled()){
-                request.setDownloadCancel(true);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * resume Download
-     * @param id
-     * @return
-     */
-    @Override
-    public boolean resume(int id) {
-        for(int i=0;i<searchList.size();i++){
-            DownloadRequest request = (DownloadRequest) searchList.get(i);
-            if(request.getId() == id && request.isDownloadCancelled()){
-                request.setDownloadCancel(false);
-                taskList.add(request);
-                return true;
+        if(searchList != null){
+            for(int i=0;i<searchList.size();i++){
+                DownloadRequest request = (DownloadRequest) searchList.get(i);
+                if(request.getId() == id && !request.isDownloadCancelled()){
+                    request.setDownloadCancel(true);
+                    searchList.remove(i);
+                    return true;
+                }
             }
         }
         return false;
@@ -145,12 +133,14 @@ public final class TaskManager implements LiteDownloader {
      */
     @Override
     public boolean cancel(int id) {
-        for(int i=0;i<searchList.size();i++){
-            DownloadRequest request = (DownloadRequest) searchList.get(i);
-            if(request.getId() == id){
-                request.setDownloadCancel(true);
-                searchList.remove(i);
-                return true;
+        if(searchList != null){
+            for(int i=0;i<searchList.size();i++){
+                DownloadRequest request = (DownloadRequest) searchList.get(i);
+                if(request.getId() == id){
+                    request.setDownloadCancel(true);
+                    searchList.remove(i);
+                    return true;
+                }
             }
         }
         return false;

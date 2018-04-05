@@ -34,9 +34,12 @@ public class Task extends Thread {
     public void run() {
         while(true){
             try{
-                if(queue == null)
+                if(queue == null){
+                    callBack = null;
                     return;
+                }
                 DownloadRequest request = (DownloadRequest) queue.take();
+                request.setDownloadedSize(getFileSize(request.getDir(),request.getFilename()));
                 Download(request);
 
             }catch (InterruptedException e){
@@ -44,11 +47,26 @@ public class Task extends Thread {
                     if(queue != null) {
                         queue.clear();
                         queue = null;
+                        callBack = null;
                     }
                 }
 
             }
         }
+    }
+
+    /**
+     * get file size
+     * @param path
+     * @param filename
+     * @return
+     */
+    public long getFileSize(String path,String filename){
+        String filepath = path + "/" +filename;
+        File file = new File(filepath);
+        if(file.exists())
+            return file.length();
+        return 0;
     }
 
     /**

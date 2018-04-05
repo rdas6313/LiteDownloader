@@ -13,10 +13,11 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
-import com.example.litedownloaderapi.DownloadCode;
-import com.example.litedownloaderapi.Interfaces.DownloadEventListener;
-import com.example.litedownloaderapi.Manager;
-import com.example.litedownloaderapi.Request;
+import com.example.litedownloaderapi.DownloadRequest;
+import com.example.litedownloaderapi.Interface.LiteDownloadListener;
+import com.example.litedownloaderapi.Interface.LiteDownloader;
+import com.example.litedownloaderapi.Interface.Request;
+import com.example.litedownloaderapi.TaskManager;
 import com.example.rdas6313.litedownloader.DownloadInformation;
 import com.example.rdas6313.litedownloader.NotificationUtils;
 import com.example.rdas6313.litedownloader.R;
@@ -28,14 +29,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-public class BackgroundDownloaderService extends Service implements DownloadEventListener{
+public class BackgroundDownloaderService extends Service implements LiteDownloadListener{
 
     private final String TAG = BackgroundDownloaderService.class.getName();
     private HashMap runningData;
 
     private final MyBinder binder = new MyBinder();
     private CallBackListener runninglistener;
-    private Manager manager;
+    private LiteDownloader manager;
 
     private final int NOTIFICATION_ICON = R.mipmap.ic_launcher_round;
     private final static int MAX = 100;
@@ -59,7 +60,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         if(manager != null) {
             boolean isPaused = manager.pause(id);
             if(isPaused){
-                PauseAndErrorMethod(id,DownloadCode.DOWNLOAD_INTERRUPT_ERROR,"Paused Download");
+                PauseAndErrorMethod(id,LiteDownloader.PAUSED_ERROR,"Paused Download");
                 Log.e(TAG,"Paused Download "+id);
             }
             return isPaused;
@@ -76,8 +77,13 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         information.setDownloadUrl(download_url);
         information.setDownloadStatus(DownloadInformation.RESUME_DOWNLOAD);
         information.setSavePath(saveUri);
-        Request request = new Request(filename,download_url,saveUri);
-        int id = manager.push(request);
+        information.setFileSize(filesize);
+        information.setDownloadedSize(downloadedSize);
+        Request request = DownloadRequest.getRequest()
+                .setDir(saveUri)
+                .setDownloadUrl(download_url)
+                .setFileName(filename);
+        int id = manager.add(request);
         information.setId(id);
         if(runningData != null && runningData.isEmpty())
             shouldStartForeground = true;
@@ -120,8 +126,8 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
     @Override
     public void onCreate() {
         super.onCreate();
-        manager = Manager.getInstance(Runtime.getRuntime().availableProcessors());
-        manager.bind(this);
+        manager = TaskManager.getManager();
+        manager.setCallbackListener(this);
         runningData = new HashMap();
         for(int i=0;i<MAX;i++){
             nlist[i] = null;
@@ -142,8 +148,8 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         suddenPauseDownload();
         clearDownloadsData();
         if(manager != null) {
-            manager.unbind();
-            manager.release();
+            manager.setCallbackListener(null);
+            manager.clear();
         }
         Log.e(TAG,"OnDestroy Called");
     }
@@ -189,25 +195,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         information.setFileSize(fileSize);
     }
 
-    @Override
-    public void onProgress(int id, int progress, long downloadedSize, long fileSize) {
-        updateInformation(id,progress,downloadedSize,fileSize);
-        if(runninglistener != null)
-            runninglistener.onProgress(id,progress,downloadedSize,fileSize);
-        if(nlist[id] != null){
-            NotificationUtils.changeProgress(progress,nlist[id],id);
-        }
-    }
-
-    @Override
-    public void onError(int id, int errorCode, String errorMsg) {
-        if(errorCode != DownloadCode.DOWNLOAD_INTERRUPT_ERROR){
-            PauseAndErrorMethod(id,errorCode,errorMsg);
-        }
-
-    }
-
-
     private void uploadDataToSuccessDb(DownloadInformation information){
         ContentValues value = new ContentValues();
         value.put(DownloaderContract.Success.TITLE,information.getTitle());
@@ -217,25 +204,6 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         getContentResolver().insert(DownloaderContract.Success.CONTENT_URI,value);
     }
 
-    @Override
-    public void onSuccess(Request request) {
-        String content = "";
-        if(runninglistener != null)
-            runninglistener.onSuccess(request);
-        if(runningData.containsKey(request.getId())){
-            updateInformation(request.getId(),100,request.getFileSize(),request.getFileSize());
-            DownloadInformation information = (DownloadInformation)runningData.get(request.getId());
-            information.setDownloadStatus(DownloadInformation.SUCCESS_DOWNLOAD);
-            uploadDataToSuccessDb(information);
-            runningData.remove(request.getId());
-            if(nlist[request.getId()] != null){
-                content = getString(R.string.successfullNotification);
-            }
-        }
-
-        isThereAnyRunningDownload(content,request.getId());
-        Log.e(TAG,"OnSuccess "+request.getId());
-    }
 
     private void uploadDataToPauseErrorDb(DownloadInformation information){
         ContentValues value = new ContentValues();
@@ -257,7 +225,7 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
             DownloadInformation information = (DownloadInformation) runningData.get(id);
             runningData.remove(id);
             if(information != null) {
-                if(errorCode == DownloadCode.DOWNLOAD_INTERRUPT_ERROR) {
+                if(errorCode == LiteDownloader.PAUSED_ERROR) {
                     information.setDownloadStatus(DownloadInformation.PAUSE_DOWNLOAD);
                     content = getString(R.string.pauseNotification)+" "+information.getProgress()+"%";
                 }
@@ -276,6 +244,47 @@ public class BackgroundDownloaderService extends Service implements DownloadEven
         isThereAnyRunningDownload(content,id);
     }
 
+    @Override
+    public void onStart(int id) {
+
+    }
+
+    @Override
+    public void onError(int id, String errorMsg, int errorCode) {
+        if(errorCode != LiteDownloader.PAUSED_ERROR){
+            PauseAndErrorMethod(id,errorCode,errorMsg);
+        }
+    }
+
+    @Override
+    public void onProgress(int id, long fileSize, long downloadedSize, int progress) {
+        updateInformation(id,progress,downloadedSize,fileSize);
+        if(runninglistener != null)
+            runninglistener.onProgress(id,progress,downloadedSize,fileSize);
+        if(nlist[id] != null){
+            NotificationUtils.changeProgress(progress,nlist[id],id);
+        }
+    }
+
+    @Override
+    public void onSuccess(int id) {
+        String content = "";
+        if(runningData.containsKey(id)){
+            DownloadInformation request = (DownloadInformation) runningData.get(id);
+            if(runninglistener != null)
+                runninglistener.onSuccess(request);
+            updateInformation(request.getId(),100,request.getFileSize(),request.getFileSize());
+            request.setDownloadStatus(DownloadInformation.SUCCESS_DOWNLOAD);
+            uploadDataToSuccessDb(request);
+            runningData.remove(request.getId());
+            if(nlist[request.getId()] != null){
+                content = getString(R.string.successfullNotification);
+            }
+        }
+
+        isThereAnyRunningDownload(content,id);
+        Log.e(TAG,"OnSuccess "+id);
+    }
 
 
     public class MyBinder extends Binder{

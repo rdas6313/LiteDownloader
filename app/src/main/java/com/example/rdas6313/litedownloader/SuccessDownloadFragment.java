@@ -26,7 +26,6 @@ import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
-import com.example.litedownloaderapi.Request;
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 import com.example.rdas6313.litedownloader.backgroundDownload.CallBackListener;
 import com.example.rdas6313.litedownloader.data.DownloaderContract;

@@ -2,37 +2,24 @@ package com.example.rdas6313.litedownloader;
 
 
 import android.Manifest;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.os.Build;
-import android.os.IBinder;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
-import com.example.rdas6313.litedownloader.data.DownloaderContract;
 
-import java.util.ArrayList;
-
-
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity {
 
     private final String TAG = MainActivity.class.getName();
 
@@ -43,7 +30,6 @@ public class MainActivity extends AppCompatActivity{
 
     private final String PAUSE_ERROR_FRAG = "pause_error_fagment";
     private PauseErrorFragment pauseErrorFragment;
-
 
     private ViewPager pager;
     private PagerAdapter pagerAdapter;
@@ -73,19 +59,18 @@ public class MainActivity extends AppCompatActivity{
         //throw new RuntimeException("Force Crash");
     }
 
-    private void checkPermissions(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ){
-                if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.READ_EXTERNAL_STORAGE) && ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+    private void checkPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE) && ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     // Todo:- should explain why u need these permissions
-                    ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},RESPONSE_CODE);
-                }else{
-                    ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},RESPONSE_CODE);
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, RESPONSE_CODE);
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, RESPONSE_CODE);
                 }
             }
         }
     }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode){
@@ -109,7 +94,7 @@ public class MainActivity extends AppCompatActivity{
     }
 
 
-    private class PagerAdapter extends FragmentStatePagerAdapter{
+    private class PagerAdapter extends FragmentStatePagerAdapter {
 
          private final String ACTIVE_DOWNLOAD_TITLE = "OnGoing";
          private final String PAUSE_ERROR_DOWNLOAD_TITLE = "Paused/Error";
@@ -153,4 +138,5 @@ public class MainActivity extends AppCompatActivity{
              }
          }
      }
+
 }

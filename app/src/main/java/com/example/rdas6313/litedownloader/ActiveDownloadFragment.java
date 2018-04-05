@@ -29,9 +29,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.litedownloaderapi.DownloadCode;
-import com.example.litedownloaderapi.Manager;
-import com.example.litedownloaderapi.Request;
+import com.example.litedownloaderapi.Interface.LiteDownloader;
 import com.example.rdas6313.litedownloader.backgroundDownload.BackgroundDownloaderService;
 import com.example.rdas6313.litedownloader.backgroundDownload.CallBackListener;
 
@@ -139,7 +137,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     @Override
     public void onError(int id, int errorCode, String errorMsg,Object object) {
         Log.e(TAG,"Id "+id+" "+errorCode+" "+errorMsg);
-        if(errorCode != DownloadCode.DOWNLOAD_INTERRUPT_ERROR){
+        if(errorCode != LiteDownloader.PAUSED_ERROR){
             int pos = adapter.getAdapterPositionByDownloadId(id);
             if(pos != -1)
                 adapter.remove(pos);
@@ -147,7 +145,7 @@ public class ActiveDownloadFragment extends Fragment implements CallBackListener
     }
 
     @Override
-    public void onSuccess(Request request) {
+    public void onSuccess(DownloadInformation request) {
         Log.i(TAG,"id "+request.getId()+" Success");
         adapter.remove(adapter.getAdapterPositionByDownloadId(request.getId()));
     }

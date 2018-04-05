@@ -1,6 +1,6 @@
 package com.example.rdas6313.litedownloader.backgroundDownload;
 
-import com.example.litedownloaderapi.Request;
+import com.example.rdas6313.litedownloader.DownloadInformation;
 
 import java.util.ArrayList;
 
@@ -13,7 +13,7 @@ public interface CallBackListener {
     public void onAddDownload(int id,String title,String downlaod_url,String save_Path,long fileSize,long downloadedSize);
     public void onProgress(int id,int progress,long downloadedSize,long fileSize);
     public void onError(int id,int errorCode,String errorMsg,Object objec);
-    public void onSuccess(Request request);
+    public void onSuccess(DownloadInformation request);
     public void onGettingDownloads(ArrayList list);
 
 }

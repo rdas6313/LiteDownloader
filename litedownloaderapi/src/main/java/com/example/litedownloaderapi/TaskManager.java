@@ -10,6 +10,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by rdas6313 on 4/4/18.
+ * TaskManager class helps to initialize all the threads and clear the memory when this api is no longer needed
+ * and helps to pause,resume,cancel and cancel all downlaod.
  */
 
 public final class TaskManager implements LiteDownloader {
@@ -37,6 +39,10 @@ public final class TaskManager implements LiteDownloader {
         return taskManager;
     }
 
+    /**
+     * initializing all Task Thread to handel Download
+     * @param number
+     */
     private void initTask(int number){
         for(int i=0;i<number;i++){
             Task task = new Task(taskList,callBack);
@@ -45,6 +51,9 @@ public final class TaskManager implements LiteDownloader {
         }
     }
 
+    /**
+     * clearing Memory
+     */
     @Override
     public void clear(){
         stopTasks();
@@ -64,6 +73,9 @@ public final class TaskManager implements LiteDownloader {
         taskManager = null;
     }
 
+    /**
+     * stoping all Task Thread
+     */
     private void stopTasks(){
         if(tasks != null){
             for(int i=0;i<tasks.length;i++){
@@ -74,6 +86,11 @@ public final class TaskManager implements LiteDownloader {
         }
     }
 
+    /**
+     * add Download to execute using Task Thread
+     * @param request
+     * @return
+     */
     @Override
     public int add(Request request) {
         if(request != null && taskList != null && searchList != null){
@@ -86,6 +103,11 @@ public final class TaskManager implements LiteDownloader {
         return -1;
     }
 
+    /**
+     * pause Download
+     * @param id
+     * @return
+     */
     @Override
     public boolean pause(int id) {
         for(int i=0;i<searchList.size();i++){
@@ -98,6 +120,11 @@ public final class TaskManager implements LiteDownloader {
         return false;
     }
 
+    /**
+     * resume Download
+     * @param id
+     * @return
+     */
     @Override
     public boolean resume(int id) {
         for(int i=0;i<searchList.size();i++){
@@ -111,6 +138,11 @@ public final class TaskManager implements LiteDownloader {
         return false;
     }
 
+    /**
+     * cancel Download
+     * @param id
+     * @return
+     */
     @Override
     public boolean cancel(int id) {
         for(int i=0;i<searchList.size();i++){
@@ -124,6 +156,9 @@ public final class TaskManager implements LiteDownloader {
         return false;
     }
 
+    /**
+     * canceling All Download
+     */
     @Override
     public void cancelAll() {
         if(searchList != null){
@@ -138,6 +173,10 @@ public final class TaskManager implements LiteDownloader {
         }
     }
 
+    /**
+     * setting callBack listener
+     * @param listener
+     */
     @Override
     public void setCallbackListener(LiteDownloadListener listener) {
         if(callBack != null){

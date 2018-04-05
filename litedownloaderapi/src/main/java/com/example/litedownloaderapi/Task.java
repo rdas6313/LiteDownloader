@@ -16,6 +16,7 @@ import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by rdas6313 on 4/4/18.
+ * Task class is a Thread which helps to downlaod.
  */
 
 public class Task extends Thread {

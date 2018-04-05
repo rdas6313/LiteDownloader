@@ -11,6 +11,7 @@ import java.util.concurrent.Executor;
 
 /**
  * Created by rdas6313 on 4/4/18.
+ * CallBack class helps to send data to main thread
  */
 
 public class CallBack {
@@ -19,6 +20,9 @@ public class CallBack {
     private LiteDownloadListener listener;
     private final static String TAG = CallBack.class.getName();
 
+    /**
+     * initializing executor object.
+     */
     public CallBack(){
         final Handler handler = new Handler(Looper.getMainLooper());
         executor = new Executor() {
@@ -29,10 +33,21 @@ public class CallBack {
         };
     }
 
+    /**
+     * setting callback listener
+     * @param liteDownloadListener
+     */
     public void setCallback(LiteDownloadListener liteDownloadListener){
         listener = liteDownloadListener;
     }
 
+    /**
+     * sending progress to main thread
+     * @param id
+     * @param downloadedSize
+     * @param fileSize
+     * @param progress
+     */
     public void sendProgress(final int id, final long downloadedSize, final long fileSize, final int progress){
         executor.execute(new Runnable() {
             @Override
@@ -44,6 +59,12 @@ public class CallBack {
         });
     }
 
+    /**
+     * sending error to main thread
+     * @param id
+     * @param errorMsg
+     * @param errorCode
+     */
     public void sendError(final int id, final String errorMsg, final int errorCode){
         executor.execute(new Runnable() {
             @Override
@@ -55,6 +76,10 @@ public class CallBack {
         });
     }
 
+    /**
+     * sending success to main thread
+     * @param id
+     */
     public void sendSuccess(final int id){
         executor.execute(new Runnable() {
             @Override
@@ -66,6 +91,10 @@ public class CallBack {
         });
     }
 
+    /**
+     * sending start to main thread
+     * @param id
+     */
     public void sendStart(final int id){
         executor.execute(new Runnable() {
             @Override
@@ -76,6 +105,9 @@ public class CallBack {
         });
     }
 
+    /**
+     * clearing callBacks and executor to free memory
+     */
     public void clearCallBack(){
         executor = null;
         listener = null;

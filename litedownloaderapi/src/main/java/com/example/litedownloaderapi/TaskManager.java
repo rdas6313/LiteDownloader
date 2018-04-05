@@ -90,7 +90,7 @@ public final class TaskManager implements LiteDownloader {
     public boolean pause(int id) {
         for(int i=0;i<searchList.size();i++){
             DownloadRequest request = (DownloadRequest) searchList.get(i);
-            if(request.getId() == id){
+            if(request.getId() == id && !request.isDownloadCancelled()){
                 request.setDownloadCancel(true);
                 return true;
             }
@@ -102,7 +102,7 @@ public final class TaskManager implements LiteDownloader {
     public boolean resume(int id) {
         for(int i=0;i<searchList.size();i++){
             DownloadRequest request = (DownloadRequest) searchList.get(i);
-            if(request.getId() == id){
+            if(request.getId() == id && request.isDownloadCancelled()){
                 request.setDownloadCancel(false);
                 taskList.add(request);
                 return true;
@@ -113,6 +113,14 @@ public final class TaskManager implements LiteDownloader {
 
     @Override
     public boolean cancel(int id) {
+        for(int i=0;i<searchList.size();i++){
+            DownloadRequest request = (DownloadRequest) searchList.get(i);
+            if(request.getId() == id){
+                request.setDownloadCancel(true);
+                searchList.remove(i);
+                return true;
+            }
+        }
         return false;
     }
 

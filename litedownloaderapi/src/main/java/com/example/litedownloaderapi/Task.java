@@ -168,7 +168,7 @@ public class Task extends Thread {
         try{
 
             if(isFileExists) {
-                if(fileSize == file.length()){
+                if(fileSize <= file.length()){
                     sendError(req_id,"Already Downloaded Error",LiteDownloader.ALREADY_DOWNLOADED_ERROR);
                     return;
                 }

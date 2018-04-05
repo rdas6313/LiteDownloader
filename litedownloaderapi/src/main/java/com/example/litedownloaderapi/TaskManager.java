@@ -100,6 +100,14 @@ public final class TaskManager implements LiteDownloader {
 
     @Override
     public boolean resume(int id) {
+        for(int i=0;i<searchList.size();i++){
+            DownloadRequest request = (DownloadRequest) searchList.get(i);
+            if(request.getId() == id){
+                request.setDownloadCancel(false);
+                taskList.add(request);
+                return true;
+            }
+        }
         return false;
     }
 

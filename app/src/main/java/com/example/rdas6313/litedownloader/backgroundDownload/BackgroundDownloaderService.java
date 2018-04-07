@@ -82,6 +82,7 @@ public class BackgroundDownloaderService extends Service implements LiteDownload
         Request request = DownloadRequest.getRequest()
                 .setDir(saveUri)
                 .setDownloadUrl(download_url)
+                .setCallBackListener(this)
                 .setFileName(filename);
         int id = manager.add(request);
         information.setId(id);
@@ -127,7 +128,6 @@ public class BackgroundDownloaderService extends Service implements LiteDownload
     public void onCreate() {
         super.onCreate();
         manager = TaskManager.getManager();
-        manager.setCallbackListener(this);
         runningData = new HashMap();
         for(int i=0;i<MAX;i++){
             nlist[i] = null;
@@ -148,7 +148,6 @@ public class BackgroundDownloaderService extends Service implements LiteDownload
         suddenPauseDownload();
         clearDownloadsData();
         if(manager != null) {
-            manager.setCallbackListener(null);
             manager.clear();
         }
         Log.e(TAG,"OnDestroy Called");
@@ -268,6 +267,7 @@ public class BackgroundDownloaderService extends Service implements LiteDownload
 
     @Override
     public void onSuccess(int id) {
+        Log.e(TAG,"CALLING SUCCESS");
         String content = "";
         if(runningData.containsKey(id)){
             DownloadInformation request = (DownloadInformation) runningData.get(id);

@@ -17,14 +17,13 @@ import java.util.concurrent.Executor;
 public class CallBack {
 
     private Executor executor;
-    private LiteDownloadListener listener;
     private final static String TAG = CallBack.class.getName();
-
+    private Handler handler;
     /**
      * initializing executor object.
      */
     public CallBack(){
-        final Handler handler = new Handler(Looper.getMainLooper());
+        handler = new Handler(Looper.getMainLooper());
         executor = new Executor() {
             @Override
             public void execute(@NonNull Runnable command) {
@@ -34,26 +33,19 @@ public class CallBack {
     }
 
     /**
-     * setting callback listener
-     * @param liteDownloadListener
-     */
-    public void setCallback(LiteDownloadListener liteDownloadListener){
-        listener = liteDownloadListener;
-    }
-
-    /**
      * sending progress to main thread
      * @param id
+     * @param filesize
      * @param downloadedSize
-     * @param fileSize
      * @param progress
+     * @param liteDownloadListener
      */
-    public void sendProgress(final int id, final long downloadedSize, final long fileSize, final int progress){
+    public void sendProgress(final int id, final long filesize, final long downloadedSize, final int progress, final LiteDownloadListener liteDownloadListener){
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                if(listener != null){
-                    listener.onProgress(id,fileSize,downloadedSize,progress);
+                if(liteDownloadListener != null){
+                    liteDownloadListener.onProgress(id,filesize,downloadedSize,progress);
                 }
             }
         });
@@ -64,13 +56,14 @@ public class CallBack {
      * @param id
      * @param errorMsg
      * @param errorCode
+     * @param liteDownloadListener
      */
-    public void sendError(final int id, final String errorMsg, final int errorCode){
+    public void sendError(final int id, final String errorMsg, final int errorCode, final LiteDownloadListener liteDownloadListener){
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                if(listener != null){
-                    listener.onError(id,errorMsg,errorCode);
+                if(liteDownloadListener != null){
+                    liteDownloadListener.onError(id,errorMsg,errorCode);
                 }
             }
         });
@@ -79,13 +72,14 @@ public class CallBack {
     /**
      * sending success to main thread
      * @param id
+     * @param liteDownloadListener
      */
-    public void sendSuccess(final int id){
+    public void sendSuccess(final int id, final LiteDownloadListener liteDownloadListener){
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                if(listener != null){
-                    listener.onSuccess(id);
+                if(liteDownloadListener != null){
+                    liteDownloadListener.onSuccess(id);
                 }
             }
         });
@@ -94,13 +88,14 @@ public class CallBack {
     /**
      * sending start to main thread
      * @param id
+     * @param liteDownloadListener
      */
-    public void sendStart(final int id){
-        executor.execute(new Runnable() {
+    public void sendStart(final int id,final LiteDownloadListener liteDownloadListener){
+       executor.execute(new Runnable() {
             @Override
             public void run() {
-                if(listener != null)
-                    listener.onStart(id);
+                if(liteDownloadListener != null)
+                    liteDownloadListener.onStart(id);
             }
         });
     }
@@ -110,6 +105,5 @@ public class CallBack {
      */
     public void clearCallBack(){
         executor = null;
-        listener = null;
     }
 }

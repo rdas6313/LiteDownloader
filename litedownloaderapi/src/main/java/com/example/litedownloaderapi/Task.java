@@ -1,7 +1,9 @@
 package com.example.litedownloaderapi;
 
+import android.os.Process;
 import android.util.Log;
 
+import com.example.litedownloaderapi.Interface.LiteDownloadListener;
 import com.example.litedownloaderapi.Interface.LiteDownloader;
 
 import java.io.File;
@@ -38,6 +40,7 @@ public class Task extends Thread {
                     callBack = null;
                     return;
                 }
+                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
                 DownloadRequest request = (DownloadRequest) queue.take();
                 request.setDownloadedSize(getFileSize(request.getDir(),request.getFilename()));
                 Download(request);
@@ -90,7 +93,7 @@ public class Task extends Thread {
         int req_id = request.getId();
         Log.e(TAG,"URL - "+downloadUrl);
         if(downloadUrl == null || downloadUrl.length() == 0){
-            sendError(req_id,"Download Url is Empty", LiteDownloader.EMPTY_URL_ERROR);
+            sendError(req_id,"Download Url is Empty", LiteDownloader.EMPTY_URL_ERROR,request.getListener());
             return;
         }
         HttpURLConnection connection = null;
@@ -108,13 +111,13 @@ public class Task extends Thread {
                 processInputStream(inputStream,request);
         }catch (MalformedURLException e){
             Log.e(TAG,e.getMessage());
-            sendError(req_id,"Malformed Url Error",LiteDownloader.MALFORMED_URL_ERROR);
+            sendError(req_id,"Malformed Url Error",LiteDownloader.MALFORMED_URL_ERROR,request.getListener());
         }catch (IOException e){
             Log.e(TAG,e.getMessage());
-            sendError(req_id,"IO Exception Error",LiteDownloader.IO_ERROR);
+            sendError(req_id,"IO Exception Error",LiteDownloader.IO_ERROR,request.getListener());
         }catch (Exception e){
             Log.e(TAG,e.getMessage());
-            sendError(req_id,"Response Error",LiteDownloader.RESPONSE_ERROR);
+            sendError(req_id,"Response Error",LiteDownloader.RESPONSE_ERROR,request.getListener());
         }finally {
             if(connection != null) {
                 connection.disconnect();
@@ -142,7 +145,7 @@ public class Task extends Thread {
                 long downloadedSize = request.getDownloadedSize();
                 long filesize = downloadedSize + Long.valueOf(connection.getHeaderField("Content-length"));
                 request.setFilesize(filesize);
-                sendStart(request.getId());
+                sendStart(request.getId(),request.getListener());
                 break;
             default:
                 throw new Exception("Response Error "+connection.getResponseCode());
@@ -182,13 +185,14 @@ public class Task extends Thread {
         boolean isFileExists = file.exists();
         int len = 0;
         int progress = (int)((downloadedSize*100)/fileSize);
+        int prev_progress = (int)((downloadedSize*100)/fileSize);
         byte[] b = new byte[1024];
         FileOutputStream fileOutputStream = null;
         try{
 
             if(isFileExists) {
                 if(fileSize <= file.length()){
-                    sendError(req_id,"Already Downloaded Error",LiteDownloader.ALREADY_DOWNLOADED_ERROR);
+                    sendError(req_id,"Already Downloaded Error",LiteDownloader.ALREADY_DOWNLOADED_ERROR,request.getListener());
                     return;
                 }
                 fileOutputStream = new FileOutputStream(file, true);
@@ -200,32 +204,37 @@ public class Task extends Thread {
             }
             while ((len = inputStream.read(b)) != -1){
                 if(request.isDownloadCancelled()){
-                    sendError(req_id,"Paused Download Error",LiteDownloader.PAUSED_ERROR);
+                    sendError(req_id,"Paused Download Error",LiteDownloader.PAUSED_ERROR,request.getListener());
                     break;
                 }
                 fileOutputStream.write(b,0,len);
                 downloadedSize += len;
                 request.setDownloadedSize(downloadedSize);
-                sendProgress(request);
+                progress = (int)((downloadedSize*100)/fileSize);
+                if((progress-prev_progress) > 0) {
+                    prev_progress = progress;
+                    sendProgress(req_id, fileSize, downloadedSize, request.isDownloadCancelled(), request.getListener(), progress);
+                }
             }
             Log.e(TAG,"ACTUAL DOWNLOADED SIZE "+downloadedSize);
-            if(progress >= 100) {
-                sendSuccess(req_id);
+            if(len == -1) {
+                Log.e(TAG,"Sending Success");
+                sendSuccess(req_id,request.getListener());
             }
 
         }catch (FileNotFoundException e){
             Log.e(TAG,e.getMessage());
-            sendError(req_id,"File Not Found Error",LiteDownloader.FILE_NOT_FOUND_ERROR);
+            sendError(req_id,"File Not Found Error",LiteDownloader.FILE_NOT_FOUND_ERROR,request.getListener());
         }catch (IOException e){
             Log.e(TAG,e.getMessage());
-            sendError(req_id,"IO Error",LiteDownloader.IO_ERROR);
+            sendError(req_id,"IO Error",LiteDownloader.IO_ERROR,request.getListener());
         }finally {
             try{
                 if(fileOutputStream != null)
                     fileOutputStream.close();
             }catch (IOException e){
                 Log.e(TAG,e.getMessage());
-                sendError(req_id,"IO Error",LiteDownloader.IO_ERROR);
+                sendError(req_id,"IO Error",LiteDownloader.IO_ERROR,request.getListener());
             }
         }
     }
@@ -235,41 +244,50 @@ public class Task extends Thread {
      * @param id
      * @param errorMsg
      * @param errorCode
+     * @param liteDownloadListener
      */
-
-    private void sendError(int id,String errorMsg,int errorCode){
+    private void sendError(int id, String errorMsg, int errorCode, LiteDownloadListener liteDownloadListener){
+        TaskManager manager = TaskManager.getManager();
+        manager.cancel(id);
         if(callBack != null){
-            callBack.sendError(id,errorMsg,errorCode);
+            callBack.sendError(id,errorMsg,errorCode,liteDownloadListener);
         }
     }
 
     /**
      * Sending progress to MainThread using Callback
-     * @param request
+     * @param id
+     * @param fileSize
+     * @param downloadedSize
+     * @param isDownloadCancelled
+     * @param liteDownloadListener
      */
-    public void sendProgress(DownloadRequest request){
-        if(callBack != null && !request.isDownloadCancelled()){
-            int progress = (int)((request.getDownloadedSize()*100)/request.getFilesize());
-            callBack.sendProgress(request.getId(),request.getDownloadedSize(),request.getFilesize(),progress);
+    public void sendProgress(int id,long fileSize,long downloadedSize,boolean isDownloadCancelled,LiteDownloadListener liteDownloadListener,int progress){
+        if(callBack != null && !isDownloadCancelled){
+            callBack.sendProgress(id,fileSize,downloadedSize,progress,liteDownloadListener);
         }
     }
 
     /**
-     * sending Success to MainThread using CallBack
+     *  sending Success to MainThread using CallBack
      * @param id
+     * @param liteDownloadListener
      */
-    public void sendSuccess(int id){
+    public void sendSuccess(int id,LiteDownloadListener liteDownloadListener){
+        TaskManager manager = TaskManager.getManager();
+        manager.cancel(id);
         if(callBack != null)
-            callBack.sendSuccess(id);
+            callBack.sendSuccess(id,liteDownloadListener);
     }
 
     /**
      * sending Start callback To MainThread using CallBack
      * @param id
+     * @param liteDownloadListener
      */
-    public void sendStart(int id){
+    public void sendStart(int id,LiteDownloadListener liteDownloadListener){
         if(callBack != null)
-            callBack.sendStart(id);
+            callBack.sendStart(id,liteDownloadListener);
     }
 
 }

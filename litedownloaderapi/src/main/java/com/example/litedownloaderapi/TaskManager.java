@@ -66,7 +66,6 @@ public final class TaskManager implements LiteDownloader {
             searchList = null;
         }
         if(callBack != null){
-            callBack.setCallback(null);
             callBack.clearCallBack();
             callBack = null;
         }
@@ -92,7 +91,7 @@ public final class TaskManager implements LiteDownloader {
      * @return
      */
     @Override
-    public int add(Request request) {
+    public synchronized int add(Request request) {
         if(taskList != null && searchList != null){
             if(request != null && taskList != null && searchList != null){
                 DownloadRequest req = (DownloadRequest) request;
@@ -112,13 +111,12 @@ public final class TaskManager implements LiteDownloader {
      * @return
      */
     @Override
-    public boolean pause(int id) {
+    public synchronized boolean pause(int id) {
         if(searchList != null){
             for(int i=0;i<searchList.size();i++){
                 DownloadRequest request = (DownloadRequest) searchList.get(i);
                 if(request.getId() == id && !request.isDownloadCancelled()){
                     request.setDownloadCancel(true);
-                    searchList.remove(i);
                     return true;
                 }
             }
@@ -132,7 +130,7 @@ public final class TaskManager implements LiteDownloader {
      * @return
      */
     @Override
-    public boolean cancel(int id) {
+    public synchronized boolean cancel(int id) {
         if(searchList != null){
             for(int i=0;i<searchList.size();i++){
                 DownloadRequest request = (DownloadRequest) searchList.get(i);
@@ -150,7 +148,7 @@ public final class TaskManager implements LiteDownloader {
      * canceling All Download
      */
     @Override
-    public void cancelAll() {
+    public synchronized void cancelAll() {
         if(searchList != null){
             for(int i=searchList.size()-1;i>=0;i--){
                 DownloadRequest request = (DownloadRequest) searchList.get(i);
@@ -160,17 +158,7 @@ public final class TaskManager implements LiteDownloader {
             if(taskList != null){
                 taskList.clear();
             }
-        }
-    }
 
-    /**
-     * setting callBack listener
-     * @param listener
-     */
-    @Override
-    public void setCallbackListener(LiteDownloadListener listener) {
-        if(callBack != null){
-            callBack.setCallback(listener);
         }
     }
 

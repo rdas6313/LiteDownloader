@@ -8,4 +8,5 @@ public interface Request {
     public Request setDownloadUrl(String url);
     public Request setDir(String uri);
     public Request setFileName(String filename);
+    public Request setCallBackListener(LiteDownloadListener listener);
 }

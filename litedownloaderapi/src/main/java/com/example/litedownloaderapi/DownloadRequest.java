@@ -26,6 +26,7 @@ public final class DownloadRequest implements Request {
     private boolean isCancelled;
     private int download_state,id;
     private long filesize,downloaded_Size;
+    private LiteDownloadListener mListener;
 
     private DownloadRequest(){
         download_url = null;
@@ -121,6 +122,25 @@ public final class DownloadRequest implements Request {
     public Request setFileName(String filename) {
         this.filename = filename;
         return this;
+    }
+
+    /**
+     * setting callback listener
+     * @param listener
+     * @return
+     */
+    @Override
+    public Request setCallBackListener(LiteDownloadListener listener) {
+        mListener = listener;
+        return this;
+    }
+
+    /**
+     * getting listener
+     * @return
+     */
+    public LiteDownloadListener getListener(){
+        return mListener;
     }
 
     /**
